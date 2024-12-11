@@ -1,2 +1,2 @@
 # TrabalhoED
-Exemplo de GPS utilizando grafos e filas em C
+Exemplo de implementação de sistema de gerenciamento para uma biblioteca feito em linguagem C.
