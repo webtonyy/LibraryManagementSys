@@ -40,60 +40,72 @@ int main() {
                 fgets(genero, sizeof(genero), stdin);
                 genero[strcspn(genero, "\n")] = '\0';
 
-                Livro *novo_livro = livro_init(nome, genero, autor, NULL);
-                add_livro(catalogo, novo_livro);
+                Livro *novo_livro = livro_init(nome, genero, autor);
 
-                printf("Livro adicionado com sucesso!\n");
+                if (novo_livro) { // Only add the book if it passed validation
+                    add_livro(catalogo, novo_livro);
+                    printf("Livro adicionado com sucesso!\n");
+                } else {
+                    printf("Erro ao adicionar livro. Certifique-se de que os campos contêm apenas caracteres ASCII.\n");
+                }
+
                 break;
             }
 
             case 2: { // Remover livro
-                int id;
-                printf("Digite o ID do livro a ser removido: ");
-                scanf("%d", &id);
+                char nome[100], autor[100];
+                printf("Digite o nome do livro a ser removido: ");
+                fgets(nome, sizeof(nome), stdin);
+                nome[strcspn(nome, "\n")] = '\0';
 
-                remover_livro(catalogo, id);
-                printf("Livro removido (se encontrado).\n");
+                Livro *rem = remover_livro(catalogo,nome);
+                rem ? printf("Livro removido com sucesso!"): printf("Falha ao remover livro.");
+
                 break;
             }
 
             case 3: { // Editar livro
-                char nome[100], novo_genero[50], novo_autor[100];
-                int id;
+                char nome[100],novo_nome[100], novo_genero[50], novo_autor[100];
 
-                printf("Digite o ID do livro a ser editado: ");
-                scanf("%d", &id);
-                getchar();
-
-                printf("Digite o novo nome do livro: ");
+                printf("Digite o nome do livro a ser editado: ");
                 fgets(nome, sizeof(nome), stdin);
                 nome[strcspn(nome, "\n")] = '\0';
 
-                printf("Digite o novo autor do livro: ");
-                fgets(novo_autor, sizeof(novo_autor), stdin);
-                novo_autor[strcspn(novo_autor, "\n")] = '\0';
+                printf("Digite o novo nome do livro: ");
+                fgets(novo_nome, sizeof(novo_nome), stdin);
+                novo_nome[strcspn(novo_nome, "\n")] = '\0';
 
                 printf("Digite o novo gênero do livro: ");
                 fgets(novo_genero, sizeof(novo_genero), stdin);
                 novo_genero[strcspn(novo_genero, "\n")] = '\0';
 
-                Livro temp_livro = { .id = id,
-                                     .nome = strdup(nome),
-                                     .genero = strdup(novo_genero),
-                                     .autor = strdup(novo_autor),
-                                     .esq = NULL,
-                                     .dir = NULL,
-                                     .qtd = 1 };
+                printf("Digite o novo autor do livro: ");
+                fgets(novo_autor, sizeof(novo_autor), stdin);
+                novo_autor[strcspn(novo_autor, "\n")] = '\0';
 
-                editar_livro(catalogo, &temp_livro);
+                Livro temp_livro = {
+                    .nome = strdup(nome),
+                    .genero = strdup(novo_genero),
+                    .autor = strdup(novo_autor),
+                    .esq = NULL,
+                    .dir = NULL,
+                    .qtd = 1
+                };
+
+                Livro *editado = editar_livro(catalogo, nome, &temp_livro);
+
+                if (editado) {
+                    printf("Livro editado com sucesso!\n");
+                } else {
+                    printf("Edição falhou. Livro não encontrado.\n");
+                }
 
                 free(temp_livro.nome); // Libera strings temporárias
                 free(temp_livro.genero);
                 free(temp_livro.autor);
 
-                printf("Livro editado com sucesso!\n");
                 break;
-            }
+}           
 
             case 4: { // Listar livros
                 if (catalogo->raiz) {
