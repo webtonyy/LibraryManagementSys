@@ -3,257 +3,278 @@
 #include <string.h>
 #include "emp_stt.h"
 
-int id = 0;
 
-typedef struct Livro{
 
-    char* nome;
-    char* autor;
-    char* genero;
-
-}Livro;
-
+// Estrutura que representa um nó na lista encadeada de empréstimos
 typedef struct No {
+    char *nome;         // Nome do livro armazenado no nó
+    char *autor;        // Nome do autor armazenado no nó
+    struct No *prox;    // Ponteiro para o próximo nó na lista
+    int qtd;            // Quantidade de livros no estoque
+    bool status;        // Status do livro: true (emprestado), false (disponível)
+} Livro;
 
-Livro *valor;
-struct No *prox;
-int id;
-bool status;
-
-} No_Livro;
-
-typedef struct catalogo{
-No_Livro *cabeca;
+// Estrutura que representa o catálogo de empréstimos como uma lista encadeada
+typedef struct catalogo {
+    Livro *cabeca;   // Ponteiro para o primeiro nó da lista (cabeça)
 } catalogo;
 
-// Cria uma entidade da struct 'livro' fornecendo nome, autor e gênero
-Livro *livro_init(char* nome, char* autor, char* genero){
 
-    char *nome_f = malloc((strlen(nome)+1)*sizeof(char));
-    char *autor_f = malloc((strlen(autor)+1)*sizeof(char));
-    char *gen_f = malloc((strlen(genero)*1)*sizeof(char));
 
-    strcpy(nome_f, nome);
-    strcpy(autor_f, autor);
-    strcpy(gen_f, genero);
+// Cria um nó para a lista de empréstimos fornecendo um livro
+Livro *livro_init(char *nome, char *autor) {
+    Livro *atual = malloc(sizeof(Livro)); // Aloca memória para a estrutura Livro
 
-    Livro *livro = malloc(sizeof(Livro));
-
-    livro->nome = nome_f;
-    livro->autor = autor_f;
-    livro->genero = gen_f;
-
-    return livro;
+    atual->nome = nome;     // Atribui o nome do livro ao nó
+    atual->autor = autor;   // Atribui o autor do livro ao nó
+    atual->prox = NULL;     // Define o próximo nó como NULL inicialmente (fim da lista)
+    atual->status = false;  // Define status inicial como disponível (false)
+    atual->qtd = 1;
+    
+    return atual; // Retorna o ponteiro para a estrutura Livro criada
 }
 
-// Cria um nó para a lista de empréstimos fornecendo o livro
-No_Livro *no_livro_init(Livro *valor){
-    No_Livro *atual = malloc(sizeof(No_Livro));
+// Cria e inicializa um catálogo de empréstimos vazio
+catalogo *catalogo_init() {
+    catalogo *cat = malloc(sizeof(catalogo)); // Aloca memória para a estrutura catalogo
 
-    atual->valor = valor;
-    atual->prox = NULL;
-    atual->status = false;
-    atual->id = -1;
+    cat->cabeca = NULL; // Inicializa a cabeça da lista como NULL (lista vazia)
 
-    return atual;
+    return cat; // Retorna o ponteiro para a estrutura catalogo criada
 }
 
-// Cria o catálogo de empréstimos
-catalogo *catalogo_init(){
 
-    catalogo *cat = malloc(sizeof(catalogo));
+// Função auxiliar para comparar se dois livros são iguais. Em caso positivo, retorna true, em caso contrário, false
+bool compara_livros(Livro *l1, Livro *l2){
 
-    cat->cabeca = NULL;
+    if(strcmp(l1->nome, l2->nome) == 0 && strcmp(l1->autor, l2->autor) == 0){
+        return true;
+    }
 
-    return cat;
+    return false;
 }
-
 
 // Adiciona um livro no catálogo de empréstimos
-void empstt_append(catalogo *l, No_Livro* livro){
+void empstt_append(catalogo *l, Livro* livro) {
 
-    id++;
 
-    livro->id = id;
-
-    if(l->cabeca == NULL){
+    // Verifica se a lista (catálogo) está vazia
+    if (l->cabeca == NULL) {
+        // Se estiver vazia, o novo livro se torna o primeiro elemento (cabeça) da lista
         l->cabeca = livro;
+        return;
     }
-    else{
-        No_Livro *temp = l->cabeca;
 
-        while(temp->prox){
+    else {
+        // Caso contrário, percorre a lista até encontrar o último nó
+        Livro *temp = l->cabeca;
+
+        // Continua até encontrar o último nó, onde 'prox' é NULL
+        while (temp->prox) {
             temp = temp->prox;
-        }
-        temp->prox = livro;
-    }
 
+            if(compara_livros(livro, temp)){ 
+                // Achou um livro no catálogo com o mesmo nome e autor              
+                temp->qtd++; // Adiciona mais um exemplar do livro
+                return;// Retorna da função
+            }
+        }
+        // Adiciona o novo livro ao final da lista
+        temp->prox = livro; 
+        return;
+    }
 }
 
-// Retira um livro do catálogo de empréstimos pelo seu id.
-void empstt_pop(catalogo *l, int idt){
 
-    No_Livro *temp = l->cabeca;
+// Retira um livro do catálogo de empréstimos pelo seu nome
+void empstt_pop(catalogo *l, Livro *livro) {
 
-    No_Livro *aux;
-
-    if(l->cabeca = NULL){
-        printf("A lista está vazia!\n");
+    // Verifica se a lista está vazia
+    if (l->cabeca == NULL) {
+        printf("O catálogo está vazio!\n");
         return;
     }
 
-    if(idt>id){
-        printf("Livro Inválido. Verifique seu ID e tente novamente!\n");
-        return;
+    // Ponteiro temporário para percorrer a lista
+    Livro *temp = l->cabeca;
+    // Ponteiro auxiliar para manter referência ao nó anterior
+    Livro *aux;
 
-    }
-
-
-    if(temp->id == idt){
+    // Verifica se o primeiro nó é o nó a ser removido
+    if (compara_livros(livro, temp)) {
+        // Atualiza a cabeça da lista para o próximo nó
         l->cabeca = temp->prox;
-        free(temp->valor);
+        // Libera a memória alocada para o livro e o nó
         free(temp);
         printf("Remoção realizada com sucesso!\n");
         return;
     }
 
-    while(temp->id != idt && temp != NULL){
-        aux = temp;
-        temp = temp->prox;
+    // Percorre a lista até encontrar o nó correspondente ou até o final da lista
+    while (temp != NULL && (compara_livros(livro, temp) == false)) {
+        aux = temp;      // Armazena o nó atual como anterior
+        temp = temp->prox; // Avança para o próximo nó
     }
 
-    if(temp == NULL){
+    // Verifica se o nó foi encontrado
+    if (temp == NULL) {
         printf("O livro solicitado não foi encontrado!\n");
         return;
     }
 
+    // Caso exista mais de uma unidade do livro, apenas retira um exemplar
+    if(temp->qtd > 1){
+        temp->qtd--;
+        printf("Remoção de um exemplar do livro executada com sucesso!\n");
+        return;
+    }
+
+    // Ajusta os ponteiros para remover o nó da lista
     aux->prox = temp->prox;
-    free(temp->valor);
+    // Libera a memória alocada para o livro
     free(temp);
 
     printf("Remoção realizada com sucesso!\n");
-    return;
-
 }
 
-//Verifica o estado de empréstimo de um livro específico:
+// Verifica o estado de empréstimo de um livro específico:
 // true para emprestado, false para disponível
+void empstt_status(catalogo *l, Livro *livro) {
 
+    // Ponteiro temporário para percorrer a lista de livros no catálogo
+    Livro *temp = l->cabeca;
 
-void empstt_status(catalogo *l, Livro *livro){
-
-    No_Livro *temp = l->cabeca;
-
-    if(temp == NULL){
+    // Verifica se o catálogo está vazio
+    if (temp == NULL) {
         printf("O catálogo está vazio! Por favor, adicione um livro antes de realizar quaisquer operações\n");
         return;
     }
 
-    while(temp->valor != livro && temp != NULL){
-
-        temp = temp->prox;
-
+    // Percorre a lista até encontrar o livro ou até o final da lista
+    while (temp != NULL && (compara_livros(temp, livro) == false)) {
+        temp = temp->prox; // Avança para o próximo nó
     }
 
-    if(temp == NULL){
-        printf("O livro requisitado não está no catálogo, por favor, adicione-o antes de realizar quaisquer operações!\n");
+    // Verifica se o livro não foi encontrado no catálogo
+    if (temp == NULL) {
+        printf("O livro requisitado não está no catálogo!\n");
         return;
     }
 
-    else if(temp->valor == livro){
+    // Caso o livro seja encontrado
+    else if (compara_livros(temp, livro)) {
+        char stt_empr[12]; // String para armazenar o status do livro
 
-        char stt_empr[12];
-
-
-        if(temp->status == false){
-            strcpy(stt_empr, "Disponível");
+        if(temp->qtd == 0){
+            temp->status = true; // Se no catálogo possuir 0 exemplares disponíveis, muda o status do livro para "emprestado aka true"
         }
         else{
+            temp->status = false; // Caso contrário, livro disponível
+        }
+
+        // Define o status como "Disponível" ou "Emprestado" com base no valor de `status`
+        if (temp->status == false) {
+            strcpy(stt_empr, "Disponível");
+        } else {
             strcpy(stt_empr, "Emprestado");
         }
 
-        printf("O livro %s (ID = %d) está %s.\n", livro->nome, temp->id, stt_empr);
+        // Exibe o nome do livro e seu status atual
+        printf("O livro %s está %s.\n", livro->nome, stt_empr);
         
         return;
-
     }
 }
 
-// Altera o status do livro
-void empstt_changestatus(catalogo *l, int idt, bool status){
+// Função para pegar um livro emprestado 
+void empstt_pegarlivro(catalogo *l, Livro* livro){
 
-    No_Livro *temp = l->cabeca;
-
-    if(idt <= 0){
-        printf("ID Inválido!\n");
-        return;
-    }
+    Livro *temp = l->cabeca;
 
 
-    for(int i = 1; i<idt; i++){
+    while(temp != NULL && (compara_livros(temp, livro) == false)){
         temp = temp->prox;
     }
 
     if(temp == NULL){
-        printf("Livro não encontrado! Por favor, confira o ID do livro e tente novamente.\n");
+        printf("Livro não encontrado no catálogo! Confira o nome e tente novamente.\n");
         return;
     }
-
     else{
-        if(temp->status == status){
-            printf("O livro: %s (ID = %d) já está com o status requisitado!\n", temp->valor->nome, temp->id);
+        if(temp->qtd >=1){ // Existem exemplares do livro no catálogo
+            temp->qtd--;
+            printf("Empréstimo efetuado com sucesso! Aproveite o livro. :)\n");
             return;
         }
-
-        temp->status = status;
-        printf("Operação efetuada com sucesso!\n");
-        return;
+        else{
+            printf("Infelizmente todos os exemplares do livro estão emprestados. :(\n");
+            return;
+            
+        }
+       
     }
 }
+// Função para devolver um livro emprestado
+void empstt_devolverlivro(catalogo *l, Livro *livro){
 
-// Mostra ao usuário as informações de empréstimo sobre todos os livros do catálogo
-void empstt_print(catalogo *l){
+    Livro *temp = l->cabeca;
 
-    char stt_empr[12];
-    No_Livro *temp = l->cabeca;
 
-    if(l->cabeca == NULL){
-        printf("O catálogo está vazio! Insira algum livro e tente novamente.\n");
+    while(temp != NULL && (compara_livros(temp, livro) == false)){
+        temp = temp->prox;
+    }
+
+    if(temp == NULL){
+        printf("Livro não encontrado no catálogo! Confira o nome e tente novamente.\n");
         return;
     }
-    printf("\n");
-    printf("================================================================================\n");
-    while(temp != NULL){
-        
-        if(temp->status == false){
-            strcpy(stt_empr, "Disponível");
-        }
-        else{
-            strcpy(stt_empr, "Emprestado");
-        }
+    else{
+        temp->qtd++;
+        printf("Livro devolvido com sucesso!\n");
+        return;
+    }
+       
+}
 
-        printf("Nome do livro: %s | ID do Livro: %d | Status: %s\n", temp->valor->nome, temp->id, stt_empr);
+
+// Limpa toda a lista de empréstimos
+void empstt_clear(catalogo *l) {
+
+    while (l->cabeca) {
+
+        Livro *temp = l->cabeca;
+
+        l->cabeca = l->cabeca->prox;
+
+        free(temp);
+    }
+
+    // Imprime uma mensagem indicando que a lista foi limpa com sucesso
+    printf("Lista de empréstimos apagada com sucesso!\n");
+}
+
+void empstt_print(catalogo *l){
+
+    if(l == NULL){
+        printf("Catalogo inexistente!\n");
+        return;
+    }
+
+    if(l->cabeca == NULL){
+        printf("Lista vazia! Adicione algum livro e tente novamente.\n");
+        return;
+    }
+
+    Livro *temp = l->cabeca;
+
+
+
+    while(temp){
+
+        printf("\n| Nome: %s | Autor: %s | Status: %d | Exemplares Disponíveis: %d |\n ",
+        temp->nome, temp->autor, temp->status, temp->qtd);
 
         temp = temp->prox;
     }
-    printf("================================================================================\n");
-    printf("\n");
-}
-
-// Limpa toda a lista de empréstimos
-void empstt_clear(catalogo *l){
-    No_Livro *temp = l->cabeca;
-
-    No_Livro *aux;
-
-    while(temp != NULL){
-
-        aux = temp->prox;
-        free(temp->valor);
-        free(temp);
-        temp = aux;
-    }
-
-    printf("Lista de empréstimos apagada com sucesso!\n");
-
+    return;
 }

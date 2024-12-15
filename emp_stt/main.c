@@ -1,60 +1,87 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "emp_stt.h"
 
+// Função auxiliar para criar e inicializar um livro
+Livro* criar_livro(char *nome, char *autor) {
+    return livro_init(nome, autor);
+}
+
 int main() {
-    // Inicializa o catálogo
-    catalogo *cat = catalogo_init();
+    // Inicializando o catálogo
+    catalogo *meuCatalogo = catalogo_init();
 
-    // Adiciona livros ao catálogo
-    Livro *livro1 = livro_init("Principia", "Isaac Newton", "Física");
-    Livro *livro2 = livro_init("1984", "George Orwell", "Ficção");
-    Livro *livro3 = livro_init("O Senhor dos Anéis", "J.R.R. Tolkien", "Fantasia");
+    // Criando 20 livros para testar
+    Livro *livros[20];
+    char *nomes[] = {
+        "Livro A", "Livro B", "Livro C", "Livro D", "Livro E",
+        "Livro F", "Livro G", "Livro H", "Livro I", "Livro J",
+        "Livro K", "Livro L", "Livro M", "Livro N", "Livro O",
+        "Livro P", "Livro Q", "Livro R", "Livro S", "Livro T"
+    };
+    char *autores[] = {
+        "Autor 1", "Autor 2", "Autor 3", "Autor 4", "Autor 5",
+        "Autor 6", "Autor 7", "Autor 8", "Autor 9", "Autor 10",
+        "Autor 11", "Autor 12", "Autor 13", "Autor 14", "Autor 15",
+        "Autor 16", "Autor 17", "Autor 18", "Autor 19", "Autor 20"
+    };
 
-    No_Livro *no1 = no_livro_init(livro1);
-    No_Livro *no2 = no_livro_init(livro2);
-    No_Livro *no3 = no_livro_init(livro3);
+    for (int i = 0; i < 20; i++) {
+        livros[i] = criar_livro(nomes[i], autores[i]);
+        empstt_append(meuCatalogo, livros[i]);  // Adicionando os livros ao catálogo
+    }
 
-    empstt_append(cat, no1);
-    empstt_append(cat, no2);
-    empstt_append(cat, no3);
+    printf("\n--- Catálogo Inicializado com 20 Livros ---\n");
+    empstt_print(meuCatalogo);
 
-    // Imprime o catálogo completo
-    printf("Catálogo inicial:\n");
-    empstt_print(cat);
+    // Testando remoção de um livro
+    printf("\n--- Remoção de um Livro (Livro J) ---\n");
+    empstt_pop(meuCatalogo, livros[9]);  // Removendo "Livro J"
+    empstt_print(meuCatalogo);
 
-    // Testa a alteração de status de um livro
-    printf("\nAlterando status do livro '1984' para emprestado:\n");
-    empstt_changestatus(cat, 2, true);
-    empstt_print(cat);
+    // Testando o status de um livro disponível
+    printf("\n--- Verificando o Status de um Livro Disponível (Livro A) ---\n");
+    empstt_status(meuCatalogo, livros[0]);
 
-    // Verifica o status de um livro específico
-    printf("\nVerificando status do livro '1984':\n");
-    empstt_status(cat, livro2);
+    // Testando empréstimo de um livro
+    printf("\n--- Pegando um Livro Emprestado (Livro A) ---\n");
+    empstt_pegarlivro(meuCatalogo, livros[0]);
+    empstt_status(meuCatalogo, livros[0]);
 
-    // Tenta alterar o status de um livro que já está emprestado
-    printf("\nTentando emprestar novamente o livro '1984':\n");
-    empstt_changestatus(cat, 2, true);
+    // Tentando pegar emprestado novamente no caso de estoque 0
+    printf("\n--- Tentando Emprestar um Livro Sem Estoque Disponível (Livro A) ---\n");
+    empstt_pegarlivro(meuCatalogo, livros[0]);
 
-    // Remove um livro do catálogo
-    printf("\nRemovendo o livro 'Principia':\n");
-    empstt_pop(cat, 1);
-    empstt_print(cat);
+    // Testando devolução de um livro
+    printf("\n--- Devolvendo um Livro Emprestado (Livro A) ---\n");
+    empstt_devolverlivro(meuCatalogo, livros[0]);
+    empstt_status(meuCatalogo, livros[0]);
 
-    // Tenta remover um livro que não existe
-    printf("\nTentando remover um livro inexistente (ID 10):\n");
-    empstt_pop(cat, 10);
+    // Emprestando e devolvendo repetidamente
+    for (int i = 0; i < 5; i++) {
+        printf("\n--- Emprestando e Devolvendo Repetidamente (Livro B) - Iteração %d ---\n", i + 1);
+        empstt_pegarlivro(meuCatalogo, livros[1]);
+        empstt_status(meuCatalogo, livros[1]);
+        empstt_devolverlivro(meuCatalogo, livros[1]);
+        empstt_status(meuCatalogo, livros[1]);
+    }
 
-    // Limpa o catálogo
-    printf("\nLimpando o catálogo:\n");
-    empstt_clear(cat);
-    
-    // Tenta imprimir o catálogo vazio
-    printf("\nTentando imprimir o catálogo após limpeza:\n");
-    empstt_print(cat);
+    // Verificando status de um livro inexistente
+    printf("\n--- Verificando o Status de um Livro Não Existente (Livro Z) ---\n");
+    Livro *livroNaoExistente = criar_livro("Livro Z", "Autor Z");
+    empstt_status(meuCatalogo, livroNaoExistente);
 
-    // Libera a memória alocada para o catálogo
-    free(cat);
+    // Testando limpeza completa do catálogo
+    printf("\n--- Limpando o Catálogo ---\n");
+    empstt_clear(meuCatalogo);
+    empstt_print(meuCatalogo);
+
+    // Liberando memória alocada
+    free(livroNaoExistente);
+    free(meuCatalogo);
+
+    printf("\n--- Testes Finalizados ---\n");
 
     return 0;
 }
