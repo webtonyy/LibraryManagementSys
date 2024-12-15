@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/catalogo.h" // Inclua o cabeçalho apropriado
+#include <locale.h>
+#include "../include/catalogo.h"
 
-// Função para exibir o menu
+// Função para exibir o menu de opções
 void exibir_menu() {
     printf("\nDigite um número para selecionar uma ação:\n");
     printf("1 - Adicionar livro\n");
@@ -16,6 +17,8 @@ void exibir_menu() {
 }
 
 int main() {
+    setlocale(P_ALL, "Portuguese"); // Configura o locale para suportar caracteres acentuados
+
     Catalogo *catalogo = catalogo_init(); // Inicializa o catálogo
     int opcao;
 
@@ -27,7 +30,6 @@ int main() {
         switch (opcao) {
             case 1: { // Adicionar livro
                 char nome[100], autor[100], genero[50];
-
                 printf("Digite o nome do livro: ");
                 fgets(nome, sizeof(nome), stdin);
                 nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
@@ -41,32 +43,33 @@ int main() {
                 genero[strcspn(genero, "\n")] = '\0';
 
                 Livro *novo_livro = livro_init(nome, genero, autor);
-
-                if (novo_livro) { // Only add the book if it passed validation
+                if (novo_livro) {
                     add_livro(catalogo, novo_livro);
                     printf("Livro adicionado com sucesso!\n");
                 } else {
-                    printf("Erro ao adicionar livro. Certifique-se de que os campos contêm apenas caracteres ASCII.\n");
+                    printf("Erro ao adicionar livro. Certifique-se de que os campos contêm apenas letras e espaços.\n");
                 }
-
                 break;
             }
 
             case 2: { // Remover livro
-                char nome[100], autor[100];
+                char nome[100];
                 printf("Digite o nome do livro a ser removido: ");
                 fgets(nome, sizeof(nome), stdin);
                 nome[strcspn(nome, "\n")] = '\0';
 
-                Livro *rem = remover_livro(catalogo,nome);
-                rem ? printf("Livro removido com sucesso!"): printf("Falha ao remover livro.");
-
+                Livro *removido = remover_livro(catalogo, nome);
+                if (removido) {
+                    printf("Livro removido com sucesso!\n");
+                    free(removido); // Libera a memória do nó removido
+                } else {
+                    printf("Livro não encontrado.\n");
+                }
                 break;
             }
 
             case 3: { // Editar livro
-                char nome[100],novo_nome[100], novo_genero[50], novo_autor[100];
-
+                char nome[100], novo_nome[100], novo_genero[50], novo_autor[100];
                 printf("Digite o nome do livro a ser editado: ");
                 fgets(nome, sizeof(nome), stdin);
                 nome[strcspn(nome, "\n")] = '\0';
@@ -84,7 +87,7 @@ int main() {
                 novo_autor[strcspn(novo_autor, "\n")] = '\0';
 
                 Livro temp_livro = {
-                    .nome = strdup(nome),
+                    .nome = strdup(novo_nome),
                     .genero = strdup(novo_genero),
                     .autor = strdup(novo_autor),
                     .esq = NULL,
@@ -100,34 +103,26 @@ int main() {
                     printf("Edição falhou. Livro não encontrado.\n");
                 }
 
-                free(temp_livro.nome); // Libera strings temporárias
+                free(temp_livro.nome);   // Libera strings temporárias
                 free(temp_livro.genero);
                 free(temp_livro.autor);
 
                 break;
-}           
+            }
 
             case 4: { // Listar livros
-                if (catalogo->raiz) {
-                    listar_livros(catalogo);
-                } else {
-                    printf("Nenhum livro no catálogo.\n");
-                }
+                listar_livros(catalogo);
                 break;
             }
 
             case 5: { // Buscar livro por nome
-                if (catalogo->raiz) {
-                    char nome[100];
-                    printf("Digite o nome do livro a ser buscado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                char nome[100];
+                printf("Digite o nome do livro a ser buscado: ");
+                fgets(nome, sizeof(nome), stdin);
+                nome[strcspn(nome, "\n")] = '\0';
 
-                    if (!verifica_livro(catalogo, nome)) {
-                        printf("Livro não encontrado.\n");
-                    }
-                } else {
-                    printf("Nenhum livro no catálogo.\n");
+                if (!verifica_livro(catalogo, nome)) {
+                    printf("Livro não encontrado.\n");
                 }
                 break;
             }
@@ -143,5 +138,6 @@ int main() {
     } while (opcao != 6);
 
     free_catalogo(catalogo); // Libera a memória alocada para o catálogo
+
     return 0;
 }
