@@ -3,6 +3,7 @@
 #include <string.h>
 #include <locale.h>
 #include "../include/catalogo.h"
+#include "../include/emp_stt.h"
 
 // Função para exibir o menu de opções
 void exibir_menu() {
@@ -12,7 +13,10 @@ void exibir_menu() {
     printf("3 - Editar livro\n");
     printf("4 - Listar livros\n");
     printf("5 - Buscar livro por nome\n");
-    printf("6 - Sair\n");
+    printf("6 - Alugar livros\n");
+    printf("7 - Devolver livros\n");
+    printf("8 - Verificar status de um livro\n");
+    printf("9 - Sair\n");
     printf("Escolha: ");
 }
 
@@ -20,6 +24,8 @@ int main() {
     setlocale(P_ALL, "Portuguese"); // Configura o locale para suportar caracteres acentuados
 
     Catalogo *catalogo = catalogo_init(); // Inicializa o catálogo
+    catalogoL *catalogoL = catalogoL_init();
+
     int opcao;
 
     do {
@@ -42,9 +48,11 @@ int main() {
                 fgets(genero, sizeof(genero), stdin);
                 genero[strcspn(genero, "\n")] = '\0';
 
+                LivroL *novo_livroL = livroL_init(nome,autor);
                 Livro *novo_livro = livro_init(nome, genero, autor);
-                if (novo_livro) {
+                if (novo_livro && novo_livroL) {
                     add_livro(catalogo, novo_livro);
+                    empstt_append(catalogoL, novo_livroL);
                     printf("Livro adicionado com sucesso!\n");
                 } else {
                     printf("Erro ao adicionar livro. Certifique-se de que os campos contêm apenas letras e espaços.\n");
@@ -59,7 +67,9 @@ int main() {
                 nome[strcspn(nome, "\n")] = '\0';
 
                 Livro *removido = remover_livro(catalogo, nome);
-                if (removido) {
+                LivroL *removidoL = livroL_init(removido->nome, removido->autor);
+                if (removido && removidoL) {
+                    empstt_pop(catalogoL, removidoL);
                     printf("Livro removido com sucesso!\n");
                     free(removido); // Libera a memória do nó removido
                 } else {
@@ -126,8 +136,53 @@ int main() {
                 }
                 break;
             }
+            case 6: { //Alugar livro
+                char nome[100], autor[100];
+                printf("Digite o nome do livro a ser alugado: ");
+                fgets(nome, sizeof(nome), stdin);
+                nome[strcspn(nome, "\n")] = '\0';
 
-            case 6: { // Sair
+                printf("Digite o nome do autor do livro a ser alugado: ");
+                fgets(autor, sizeof(autor), stdin);
+                autor[strcspn(autor, "\n")] = '\0';
+
+                LivroL *novo = livroL_init(nome,autor);
+                int x = empstt_pegarlivro(catalogoL, novo);
+                if(x==1)  
+                    emprestar_livro(catalogo, nome, autor);
+                break;
+            }
+            case 7: { //Devolver livro
+                char nome[100], autor[100];
+                printf("Digite o nome do livro a ser devolvido: ");
+                fgets(nome, sizeof(nome), stdin);
+                nome[strcspn(nome, "\n")] = '\0';
+
+                printf("Digite o nome do autor do livro a ser devolvido: ");
+                fgets(autor, sizeof(autor), stdin);
+                autor[strcspn(autor, "\n")] = '\0';
+
+                LivroL *novo = livroL_init(nome,autor);
+                int x = empstt_devolverlivro(catalogoL, novo);
+                if(x==1)
+                    devolve_livro(catalogo, nome, autor);
+                break;
+            }
+            case 8: { //Verificar status livro
+                char nome[100], autor[100];
+                printf("Digite o nome do livro a ser consultado: ");
+                fgets(nome, sizeof(nome), stdin);
+                nome[strcspn(nome, "\n")] = '\0';
+
+                printf("Digite o nome do autor do livro a ser consultado: ");
+                fgets(autor, sizeof(autor), stdin);
+                autor[strcspn(autor, "\n")] = '\0';
+
+                LivroL *novo = livroL_init(nome,autor);
+                empstt_status(catalogoL, novo);
+                break;
+            }
+            case 9: { // Sair
                 printf("Encerrando o programa...\n");
                 break;
             }
@@ -135,7 +190,7 @@ int main() {
             default:
                 printf("Opção inválida! Tente novamente.\n");
         }
-    } while (opcao != 6);
+    } while (opcao != 9);
 
     free_catalogo(catalogo); // Libera a memória alocada para o catálogo
 
