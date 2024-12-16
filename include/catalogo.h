@@ -5,37 +5,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Estrutura para representar um livro
-typedef struct livro {
-    int id;                // ID do livro (opcional, pode ser usado para ordenação)
-    int qtd;               // Quantidade de exemplares do livro
-    char *nome;            // Nome do livro (sem acentos, usado para comparações)
-    char *real_nome;       // Nome original com acentos (usado para exibição)
-    char *real_genero;     // Gênero original com acentos (usado para exibição)
-    char *real_autor;      // Autor original com acentos (usado para exibição)
-    char *genero;          // Gênero do livro
-    char *autor;           // Autor do livro
-    struct livro *esq;     // Ponteiro para o nó esquerdo da árvore binária
-    struct livro *dir;     // Ponteiro para o nó direito da árvore binária
+typedef struct Livro {
+    char *nome;          // Nome do livro
+    char *autor;         // Autor do livro
+    char *genero;         // Gênero do livro
+    char *real_nome;
+    char *real_autor;
+    char *real_genero;
+    int qtd;                 // Quantidade de exemplares
+    struct Livro *esq;       // Ponteiro para o nó esquerdo (árvore binária)
+    struct Livro *dir;       // Ponteiro para o nó direito (árvore binária)
+    struct Livro *prox;      // Ponteiro para o próximo elemento (hash table encadeada)
 } Livro;
+
 
 // Estrutura para representar o catálogo de livros
 typedef struct catalogo {
-    int nl;                // Número total de livros no catálogo
     Livro *raiz;           // Raiz da árvore binária de livros
 } Catalogo;
 
 // Funções principais do catálogo
 Livro* livro_init(const char *nome, const char *genero, const char *autor);
 Catalogo* catalogo_init();
-void livro_set(Livro *l, const char *nome, const char *genero, const char *autor);
+Livro* editar_livro(Catalogo *c, const char *nome, Livro *novo_dados);
 Livro* add_livro(Catalogo *c, Livro *l);
 Livro* remover_livro(Catalogo *c, const char *nome);
 void listar_livros(Catalogo *c);
 void devolve_livro(Catalogo *c, char *nome, char *autor);
 void emprestar_livro(Catalogo *c, char *nome, char *autor);
 int verifica_livro(Catalogo *c, const char *nome);
-Livro* editar_livro(Catalogo *c, const char *nome, Livro *novo_dados);
+void verificar_status(Catalogo *c, const char *nome, const char *autor);
 void free_catalogo(Catalogo *c);
 
 // Funções auxiliares para manipulação de strings
