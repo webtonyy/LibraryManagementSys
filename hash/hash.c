@@ -182,4 +182,3 @@ void hash_free(HashTable *t) {
         printf("Limpeza concluída para generos!\n");
     }
 }
-
