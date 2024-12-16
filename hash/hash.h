@@ -6,6 +6,8 @@
 typedef struct Livro{
     int id;
     int chave;
+    char autor[TABLE_SIZE]; 
+    char genero[TABLE_SIZE];
 } Livro;
 
 typedef struct HashTable {
@@ -16,7 +18,7 @@ typedef struct HashTable {
 
 int funcaohash_string(const char *nome);
 int funcaohash(int chave);
-HashTable table_init(HashTable *t);
+void table_init(HashTable *t);
 Livro autores();
 Livro generos();
 void inserir_livro(HashTable *t, const char *nome);
