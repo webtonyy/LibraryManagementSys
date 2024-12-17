@@ -65,6 +65,8 @@ Livro* add_aux(Livro *atual, Livro *l) {
 Livro* add_livro(Catalogo *c, Livro *l) {
     if (!c || !l) return NULL;
 
+    c->nl++;
+
     if (c->raiz == NULL) {
         c->raiz = l;
         return c->raiz;
@@ -165,6 +167,15 @@ Livro* remove_aux(Livro *atual, const char *nome, const char *autor, Livro **rem
 
         // Caso sem filhos
         if (!atual->esq && !atual->dir) {
+
+            free(atual->nome);
+            free(atual->real_nome);
+            free(atual->genero);
+            free(atual->real_genero);
+            free(atual->autor);
+            free(atual->real_autor);
+
+            free(atual);
             return NULL;
         }
 
@@ -230,6 +241,8 @@ Livro* remover_livro(Catalogo *c, const char *nome) {
 
     if (removido) {
         printf("Livro '%s' removido com sucesso!\n", removido->real_nome);
+
+        c->nl--;
         
         // Liberar memória do nó removido
         free(removido->nome);

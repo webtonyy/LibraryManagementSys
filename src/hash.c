@@ -30,7 +30,7 @@ void inserir_generos_iniciais(HashTable *t) {
     const char *generos[] = {
         "Fantasia", "Ficção Científica", "Romance", "Mistério e Crime",
         "Terror e Horror", "Aventura", "Ficção Histórica", "Ficção Literária",
-        "Ficção Juvenil (Young Adult)", "Ficção LGBTQIA+",
+        "Ficção Juvenil", "Ficção LGBTQIA+",
         "Biografias e Memórias", "Autoajuda", "Religião e Espiritualidade",
         "História e Ciências Sociais", "Ciência e Tecnologia", "True Crime"
     };
@@ -52,7 +52,6 @@ void inserir_generos_iniciais(HashTable *t) {
         t->genero[id] = (GeneroH *)malloc(sizeof(GeneroH));
         if (t->genero[id] == NULL) {
             fprintf(stderr, "Falha de alocação de memória para gênero: %s\n", generos[i]);
-            free(genero_normalizado);
             continue;
         }
 
@@ -63,7 +62,7 @@ void inserir_generos_iniciais(HashTable *t) {
         
         t->genero[id]->livros = NULL;
         
-        free(genero_normalizado); // Libera a memória do string normalizado
+        
     }
 }
 
@@ -85,7 +84,6 @@ int inserir_livro(HashTable *t, const char *nome, const char *autor, const char 
             while (atual != NULL) {
                 if (strcmp(atual->nome, nome) == 0 && strcmp(atual->autor, autor) == 0) {
                     atual->qtd++;
-                    free(genero_normalizado); // Libera a memória do gênero normalizado
                     return 1;
                 }
                 atual = atual->prox;
@@ -94,7 +92,6 @@ int inserir_livro(HashTable *t, const char *nome, const char *autor, const char 
             NoLivro *novo_livro = (NoLivro *)malloc(sizeof(NoLivro));
             if (!novo_livro) {
                 fprintf(stderr, "Falha de alocação de memória.\n");
-                free(genero_normalizado); // Libera a memória do gênero normalizado
                 return 0;
             }
 
@@ -106,7 +103,6 @@ int inserir_livro(HashTable *t, const char *nome, const char *autor, const char 
             novo_livro->prox = t->genero[id_genero]->livros;
             t->genero[id_genero]->livros = novo_livro;
 
-            free(genero_normalizado); // Libera a memória do gênero normalizado
             return 1;
         }
         
@@ -114,7 +110,6 @@ int inserir_livro(HashTable *t, const char *nome, const char *autor, const char 
         if (id_genero == id_inicial) break; // Evita loop infinito
     }
 
-    free(genero_normalizado); // Libera a memória do gênero normalizado caso não exista na tabela
     return 0; // Falha ao encontrar o gênero
 }
 
@@ -137,7 +132,6 @@ void buscar_por_genero(HashTable *t, const char *genero) {
             
             if (!atual) {
                 printf("Nenhum livro encontrado neste gênero.\n");
-                free(genero_normalizado); // Libera a memória do gênero normalizado
                 return;
             }
             
@@ -146,7 +140,6 @@ void buscar_por_genero(HashTable *t, const char *genero) {
                 atual = atual->prox;
             }
             
-            free(genero_normalizado); // Libera a memória do gênero normalizado
             return;
         }
         
@@ -155,7 +148,6 @@ void buscar_por_genero(HashTable *t, const char *genero) {
     }
 
     printf("Gênero '%s' não encontrado.\n", genero);
-    free(genero_normalizado); // Libera a memória do gênero normalizado
 }
 
 void buscar_por_autor(HashTable *t, const char *autor) {
@@ -176,7 +168,6 @@ void buscar_por_autor(HashTable *t, const char *autor) {
 
             if (!atual) {
                 printf("Nenhum livro encontrado para este autor.\n");
-                free(autor_normalizado); // Libera a memória do autor normalizado
                 return;
             }
 
@@ -185,7 +176,6 @@ void buscar_por_autor(HashTable *t, const char *autor) {
                 atual = atual->prox;
             }
 
-            free(autor_normalizado); // Libera a memória do autor normalizado
             return;
         }
         
@@ -194,7 +184,6 @@ void buscar_por_autor(HashTable *t, const char *autor) {
     }
 
     printf("Autor '%s' não encontrado.\n", autor);
-    free(autor_normalizado); // Libera a memória do autor normalizado
 }
 
 
@@ -269,7 +258,7 @@ void hash_free(HashTable *t) {
 
             }
             free(t -> genero[i]);
-            t -> genero[i]= NULL;
+            t -> genero[i] = NULL;
 
         }
     }

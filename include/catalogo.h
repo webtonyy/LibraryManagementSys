@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Definições para representar o status de empréstimo: 1 para emprestado, 0 para disponível
+#define bool int
+#define true 1
+#define false 0
+
+
 typedef struct Livro {
     char *nome;          // Nome do livro
     char *autor;         // Autor do livro
@@ -13,6 +19,7 @@ typedef struct Livro {
     char *real_autor;
     char *real_genero;
     int qtd;                 // Quantidade de exemplares
+    bool status;             // Definição do status de empréstimo do livro 
     struct Livro *esq;       // Ponteiro para o nó esquerdo (árvore binária)
     struct Livro *dir;       // Ponteiro para o nó direito (árvore binária)
     struct Livro *prox;      // Ponteiro para o próximo elemento (hash table encadeada)
@@ -22,6 +29,7 @@ typedef struct Livro {
 // Estrutura para representar o catálogo de livros
 typedef struct catalogo {
     Livro *raiz;           // Raiz da árvore binária de livros
+    int nl;                // Número de livros no catálogo
 } Catalogo;
 
 // Funções principais do catálogo

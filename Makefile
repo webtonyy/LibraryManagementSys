@@ -1,6 +1,6 @@
 # Variáveis
 CC = gcc
-CFLAGS = -I./include
+CFLAGS = -I./include -g -Wall -Werror
 BUILD = ./build
 SOURCE = ./src
 MAIN = ./main

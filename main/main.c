@@ -31,12 +31,19 @@ int main() {
     table_init(&table);
     inserir_generos_iniciais(&table);
 
+    char buffer[10];
     int opcao;
 
     do {
         exibir_menu();
-        scanf("%d", &opcao);
-        getchar(); // Limpa o buffer do teclado
+        
+        if(fgets(buffer,sizeof(buffer),stdin) == NULL){ // Caso o usuário encerre o terminal
+            opcao = 11; // Atribui a opção 11 -> saída do programa
+            
+        }
+        else{
+            opcao = atoi(buffer); // Convertendo a entrada para int p ser utilizada no switch case
+        }
 
         switch (opcao) {
             case 1: { // Adicionar livro
@@ -97,13 +104,9 @@ int main() {
                         printf("Quantidade do livro '%s' decrementada. Quantidade atual: %d\n", removido->real_nome, removido->qtd);
                     }
                     if (removido) free(removido);
-                    if (nome_normalizado) free(nome_normalizado);
-                    if (autor_normalizado) free(autor_normalizado);
 
                 } else {
                     printf("Erro: Livro '%s' não encontrado no catálogo.\n", nome);
-                    free(nome_normalizado);
-                    free(autor_normalizado);
                 }
                 break;
             }
@@ -224,7 +227,7 @@ int main() {
             case 11:{//Sair
 
                 hash_free(&table); // Libera a memória alocada para a tabela hash
-    free_catalogo(catalogo); // Libera a memória alocada para o catálogo
+                free_catalogo(catalogo); // Libera a memória alocada para o catálogo
 
                 printf("Encerrando O Programa...\n ");
                 break;
