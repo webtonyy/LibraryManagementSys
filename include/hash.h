@@ -1,45 +1,32 @@
 #ifndef HASH_TABLE_OPEN_H
 #define HASH_TABLE_OPEN_H
 
-#define TABLE_SIZE 50
+#define TABLE_SIZE 100
 
 #include "../include/catalogo.h"
 
-typedef struct NoLivro {
-    char nome[100];
-    char autor[100];
-    char genero[50];
-    int qtd;
-    char real_nome[100];
-    struct NoLivro *prox;
-} NoLivro;
+// Estrutura para um nó na hash table
+typedef struct NoHash {
+    char *nome;             // Nome do gênero ou autor (chave, alocado dinamicamente)
+    Livro **livros;         // Vetor dinâmico de ponteiros para livros
+    int quantidade;         // Quantidade atual de livros no vetor
+    int capacidade;         // Capacidade máxima atual do vetor (para redimensionamento)
+    struct NoHash *proximo; // Próximo nó em caso de colisão na hash table
+} NoHash;
 
-typedef struct AutorH {
-    char autor[100];
-    char real_autor[100];
-    NoLivro *livros;
-} AutorH;
-
-typedef struct GeneroH {
-    char genero[50];
-    char real_genero[50];
-    NoLivro *livros;
-} GeneroH;
-
+// Estrutura da tabela hash
 typedef struct HashTable {
-    GeneroH *genero[TABLE_SIZE];
-    AutorH *autor[TABLE_SIZE];
+    NoHash **tabela;        // Vetor de ponteiros para nós da tabela hash
+    int tamanho;            // Tamanho da tabela hash (número de buckets)
 } HashTable;
 
-int funcaohash_string(const char *nome);
-int funcaohash(int chave);
-void table_init(HashTable *t);
-void inserir_generos_iniciais(HashTable *t);
-int inserir_livro(HashTable *t, const char *nome, const char *autor, const char *genero);
-void buscar_por_genero(HashTable *t, const char *genero);
-void buscar_por_autor(HashTable *t, const char *autor);
-void imprimir(HashTable *t);
-void deletar(HashTable *t, const char *nome, const char *autor, const char *genero);
-void hash_free(HashTable *t);
+// Funções principais da tabela hash
+HashTable *hash_table_init(int tamanho);                        //Inicia a tabela hash
+int funcaohash_string(const char *nome);                      // Calcula o índice com base em uma string
+int inserir_livro(HashTable *t, Livro *l, const char *nome_no); // Insere um livro na tabela hash
+void deletar(HashTable *t, const char *nome, const char *nome_no); // Deleta um livro da tabela hash
+void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto, const char *nome_no); // Edita os dados de um livro existente
+void buscar_por_no(HashTable *t, const char *nome_no);        // Busca todos os livros associados a um nó específico
+void hash_free(HashTable *t);                                 // Libera toda a memória associada à tabela hash
 
 #endif

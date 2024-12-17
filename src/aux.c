@@ -59,27 +59,10 @@ char* normalize_string(const char* str) {
 }
 
 
-
-Livro* min_aux(Livro* l) {
-    
-    while (l && l->esq) {
-        l = l->esq;
-    }
-    return l;
-}
-
 // Function to count how many books with the same name exist in the catalog
-void contar_livros(Livro *atual, const char* nome, int *count) {
-    if (!atual) return; // Base case: If the current node is NULL, stop recursion
-
-    // Recursively traverse the left subtree
-    contar_livros(atual->esq, nome, count);
-
-    // If the current book's name matches the target name, increment the count
-    if (strcmp(nome, atual->nome) == 0) {
-        (*count)++;
+void contar_livros(No *no, const char *nome, int *count) {
+        if (!no) return;
+        contar_livros(no->esquerda, nome, count);
+        if (strcmp(no->livro->nome, nome) == 0) (*count)++;
+        contar_livros(no->direita, nome, count);
     }
-
-    // Recursively traverse the right subtree
-    contar_livros(atual->dir, nome, count);
-}
