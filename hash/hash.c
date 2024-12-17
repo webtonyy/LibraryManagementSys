@@ -22,163 +22,110 @@ void table_init(HashTable *t){
         t->autor[i] = NULL;
         t->genero[i] = NULL;
     }
+    t->num_gen = 0;
 }
 
-Livro autores() {
-    Livro a;
-    fgets(a.autor, 49, stdin);
-    return a;
+void genero_possivel(HashTable *t) {
+    const char *permitidos[] = {"Ficção", "Romance", "Fantasia", "Não-ficção", "Biografia"};
+    t->num_gen = sizeof(permitidos) / sizeof(permitidos[0]);
+    
+    for (int i = 0; i < t->num_gen; i++) {
+        t->generos[i] = strdup(permitidos[i]);
+    }
 }
 
-Livro generos() {
-    Livro g;
-    fgets(g.genero, 49, stdin);
-    return g;
+int genero_valido(HashTable *t, const char *genero) {
+    if (!genero_possivel(t)) return -1;
+    
+    for (int i = 0; i < t->num_gen; i++) {
+        if (strcmp(t->generos[i], genero) == 0) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
-void inserir_livro(HashTable *t, const char *nome) {
-    if (t->autor) {
-        Livro a = autores();
-        int id = funcaohash_string(a.autor);
-        
+void inserir_autor(HashTable *t, const char *nome) {
+    int id = funcaohash_string(nome);
+    while (t->autores[id] != NULL) {
+        if (strcmp(t->autores[id]->nome, nome) == 0) {
+            return;
+        }
         //Resolver conflitos:
         while(t->autor[id] != NULL) { 
             id = funcaohash(id + 1);
         }
+    }
+    t->autores[id] = (Item *)malloc(sizeof(Item));
+    strcpy(t->autores[id]->nome, nome);
+}
 
-        //Inserção do autor:
-        t->autor[id] = (Livro *)malloc(sizeof(Livro));
-        *(t->autor[id]) = a;
-    } 
-    else if (t->genero) {
-        Livro g = generos();
-        int id = funcaohash_string(g.genero);
-
+void inserir_genero(HashTable *t, const char *nome) {
+    if (!genero_valido(t, nome)) {
+        printf("Gênero '%s' não é permitido.\n", nome);
+        return;
+    }
+    
+    int id = funcaohash_string(nome);
+    while (t->generos[id] != NULL) {
+        if (strcmp(t->generos[id]->nome, nome) == 0) {
+            return; // Gênero já existe
+        }
         //Resolver conflitos:
         while(t->genero[id] != NULL) { 
             id = funcaohash(id + 1);
         }
-
-        //Inserção do gênero:
-        t->genero[id] = (Livro *)malloc(sizeof(Livro));
-        *(t->genero[id]) = g;
     }
+    t->generos[id] = (Item *)malloc(sizeof(Item));
+    strcpy(t->generos[id]->nome, nome);
 }
 
-Livro* busca_livro(HashTable *t, const char *nome) {
-    if (t->autor != NULL) {
-        int id = funcaohash_string(nome);
-        int cond = id;
-    
-        //Conferir existência de algum livro:
-        while(t->autor[id] != NULL) {
-            if(strcmp(t->autor[id]->autor, nome) == 0) {
-                return t->autor[id];
-            }
-            id = funcaohash(id + 1);
-            if (id == cond) break;
-        }
-        printf("\nAutor não encontrado!\n");
-        return NULL;
-    }
-    if(t->genero != NULL) {
-        int id = funcaohash_string(nome);
-        int cond = id;
 
-        //Conferir existência de algum livro:
-        while(t->genero[id] != NULL) {
-            if(strcmp(t->genero[id]->genero, nome) == 0) {
-                return t->genero[id];
-            } 
-            id = funcaohash(id + 1);
-            if (id == cond) break;
-        }
-        printf("\nGênero não encontrado!\n");
-        return NULL;
-    }
-    printf("\nNão há nada inserido!\n");
-    return NULL;  // Caso ambas as tabelas sejam NULL
-}
-
-void imprimir(HashTable *t){
-    if(t->autor != NULL) {
-        printf("\nAutores:\n");
-        int ja = 0;
-
-        for(int i=0; i<TABLE_SIZE; i++){
-            if (t->autor[i] != NULL) {
-                printf("\n%s", t->autor[i]->autor);
-            }
-            ja = 1;
-        } 
-        if(ja == 0){
-            printf("\nAutor não encontrado!\n");
-        }
-    }
-    if(t->genero != NULL) {
-        printf("\nGêneros:\n");
-        int ja = 0;
-        
-        for(int i=0; i<TABLE_SIZE; i++){
-            if (t->genero[i] != NULL) {
-                printf("\n%s", t->genero[i]->genero);
-            }
-            ja = 1;
-        }
-        if(ja == 0){
-            printf("\nGênero não encontrado!\n");
+void print_autores(HashTable *t) {
+    printf("Autores existentes:\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        if (t->autores[i] != NULL) {
+            printf("- %s\n", t->autores[i]->nome);
         }
     }
 }
 
-void deletar(HashTable *t, const char *nome) {
-    if(t->autor != NULL) {
-        int id = funcaohash_string(nome);
-
-        while (t->autor[id] != NULL) {
-            if (strcmp(t->autor[id]->autor, nome) == 0) {
-                free(t->autor[id]);
-                t->autor[id] = NULL;
-                printf("Autor deletado: '%s'\n", nome);
-                return;
-            }
-            id = funcaohash(id + 1); 
+void print_generos(HashTable *t) {
+    printf("Gêneros existentes:\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        if (t->generos[i] != NULL) {
+            printf("- %s\n", t->generos[i]->nome);
         }
-        printf("Autor '%s' não encontrado!\n", nome);
     }
-    if(t->genero != NULL) {
-        int id = funcaohash_string(nome);
+}
 
-        while (t->genero[id] != NULL) {
-            if (strcmp(t->genero[id]->genero, nome) == 0) {
-                free(t->genero[id]);
-                t->genero[id] = NULL;
-                printf("Gênero deletado: '%s'\n", nome);
-                return;
-            }
-            id = funcaohash(id + 1);
+void deletar_autor(HashTable *t, const char *nome) {
+    int id = funcaohash_string(nome);
+    int original_id = id;
+
+    while (t->autores[id] != NULL) {
+        if (strcmp(t->autores[id]->nome, nome) == 0) {
+            free(t->autores[id]);
+            t->autores[id] = NULL;
+            printf("Autor deletado.\n", nome);
+            return;
         }
-        printf("Gênero '%s' não encontrado!\n", nome);
+        id = (id + 1) % TABLE_SIZE;
+        if (id == original_id) break;
     }
+    printf("Autor não encontrado.\n", nome);
 }
 
 void hash_free(HashTable *t) {
-    if(t->autor != NULL) {
-        for (int i = 0; i < TABLE_SIZE; i++) {
-            if (t->autor[i] != NULL ) {
-                free(t->autor[i]);
-                t->autor[i] = NULL;
-            }
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        if (t->autores[i] != NULL) {
+            free(t->autores[i]);
+            t->autores[i] = NULL;
         }
-        printf("Limpeza concluída para autores!\n");
-    }
-    if(t->genero != NULL) {
-        for (int i = 0; i < TABLE_SIZE; i++) {
-            if (t->genero[i] != NULL ) {
-                free(t->genero[i]);
-                t->genero[i] = NULL;
-            }
+        if (t->generos[i] != NULL) {
+            free(t->generos[i]);
+            t->generos[i] = NULL;
         }
-        printf("Limpeza concluída para generos!\n");
     }
+        printf("Limpeza concluída!\n");
 }
