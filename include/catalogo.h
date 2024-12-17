@@ -23,7 +23,6 @@ typedef struct Livro {
 // Estrutura do nó da árvore binária
 typedef struct NoArvore {
     Livro *livro;           // Ponteiro para o livro armazenado no nó
-    struct NoArovre *pai;
     struct NoArvore *esquerda;
     struct NoArvore *direita;
 } No;
@@ -39,7 +38,7 @@ Livro* livro_init(const char *nome, const char *genero, const char *autor);
 Catalogo* catalogo_init();
 Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, const char *autor);
 Livro* add_livro(Catalogo *c, Livro *l);
-void remover_livro(Catalogo *c, const char *nome);
+void remover_livro(Catalogo *c, const char *nome, const char *autor);
 void listar_livros(Catalogo *c);
 int devolve_livro(Catalogo *c, char *nome, char *autor); // Retorna 1 se devolvido, 2 se doado
 int emprestar_livro(Catalogo *c, char *nome, char *autor); // Retorna 1 se alugado, 0 se indisponível, -1 em caso de erro

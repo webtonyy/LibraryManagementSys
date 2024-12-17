@@ -46,7 +46,6 @@ No* no_init(Livro *livro) {
     novo_no->livro = livro;
     novo_no->esquerda = NULL;
     novo_no->direita = NULL;
-    novo_no->pai = NULL;
 
     return novo_no;
 }
@@ -142,47 +141,27 @@ void listar_livros(Catalogo *c) {
     listar_aux(c->raiz);
 }
 
-
-// Função auxiliar para renomear um livro na árvore binária
 No* edita_aux(No *atual, const char *nome_errado, const char *autor, const char *novo_nome) {
     if (!atual) return NULL;
 
     // Compara o título e o autor do livro
     int cmp_nome = strcmp(nome_errado, atual->livro->nome);
-    int cmp_autor = autor ? strcmp(autor, atual->livro->autor) : 0;
+    int cmp_autor = strcmp(autor, atual->livro->autor);
 
     if (cmp_nome < 0) {
         // Procura na subárvore esquerda
         atual->esquerda = edita_aux(atual->esquerda, nome_errado, autor, novo_nome);
-    } else if (cmp_nome > 0) {
+    } else if (cmp_nome > 0 || cmp_autor != 0) {
         // Procura na subárvore direita
         atual->direita = edita_aux(atual->direita, nome_errado, autor, novo_nome);
-    } else if (cmp_autor == 0) { 
+    } else if (cmp_autor == 0) {
         // Livro encontrado: renomeia o título
-        free(atual->livro->nome); // Libera a memória do nome antigo
         atual->livro->nome = strdup(novo_nome); // Aloca e copia o novo nome
-
         printf("Livro renomeado com sucesso! Novo título: '%s'\n", atual->livro->nome);
-        return atual;
     }
 
     return atual;
 }
-
-// Função principal para renomear um livro no catálogo
-Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, const char *autor) {
-    if (!c || !c->raiz || !nome_errado || !novo_nome || !autor) {
-        printf("Erro: Catálogo vazio ou dados inválidos.\n");
-        return NULL;
-    }
-
-    // Edita o livro usando a função auxiliar
-    No *editado = edita_aux(c->raiz, nome_errado, autor, novo_nome);
-
-    return editado ? editado->livro : NULL;
-}
-
-
 
 // Função auxiliar para remover um livro da árvore binária
 No* remove_aux(No *atual, const char *nome, const char *autor) {
@@ -261,27 +240,45 @@ No* remove_aux(No *atual, const char *nome, const char *autor) {
     return atual;
 }
 
+
+Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, const char *autor) {
+    if (!c || !c->raiz || !nome_errado || !novo_nome || !autor) {
+        printf("Erro: Catálogo vazio ou dados inválidos.\n");
+        return NULL;
+    }
+
+    // Edita o livro usando a função auxiliar
+    No *editado = edita_aux(c->raiz, nome_errado, autor, novo_nome);
+
+    if (!editado) {
+        printf("Erro: Livro não encontrado no catálogo.\n");
+        return NULL;
+    }
+
+    // Verifica se a posição do nó ainda é válida após a edição
+    int qtd = editado->livro->qtd; // Salva a quantidade de exemplares
+    editado->livro->qtd = 1;      // Temporariamente ajusta para 1 para remoção
+    c->raiz = remove_aux(c->raiz, novo_nome, autor); // Remove o nó editado
+
+    Livro *novo_livro = livro_init(novo_nome,editado->livro->genero,autor);
+    novo_livro->qtd = qtd;       // Restaura a quantidade original
+    novo_livro->status = editado->livro->status;
+
+    c->raiz = add_aux(c->raiz, novo_livro); // Reinsere o nó com os dados atualizados
+
+    printf("Livro '%s' atualizado com sucesso no catálogo.\n", novo_livro->nome);
+    return novo_livro;
+}
+
 // Função principal para remover um livro do catálogo
-void remover_livro(Catalogo *c, const char *nome) {
+void remover_livro(Catalogo *c, const char *nome, const char *autor) {
     if (!c || !c->raiz) {
         printf("Erro: O catálogo está vazio ou inválido.\n");
         return;
     }
 
-    // Conta quantos livros existem com o mesmo título
-    int count = 0;
-    contar_livros(c->raiz, nome, &count);
-
-    // Solicita o autor caso existam múltiplos livros com o mesmo título
-    char autor[100] = {0};
-    if (count > 1) {
-        printf("Existem %d livros com o título '%s'. Por favor, especifique o autor para remover: ", count, nome);
-        fgets(autor, sizeof(autor), stdin);
-        autor[strcspn(autor, "\n")] = '\0'; // Remove o '\n'
-    }
-
     // Remove o livro usando a função auxiliar
-    c->raiz = remove_aux(c->raiz, nome, count > 1 ? autor : NULL);
+    c->raiz = remove_aux(c->raiz, nome,autor);
 
     if (c) { 
         c -> nl--;
