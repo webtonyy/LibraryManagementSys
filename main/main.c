@@ -5,213 +5,105 @@
 #include "../include/catalogo.h"
 #include "../include/hash.h"
 
-// Função para exibir o menu de opções
-void exibir_menu() {
-    printf("\nDigite um número para selecionar uma ação:\n");
-    printf("1 - Adicionar livro\n");
-    printf("2 - Remover  livro\n");
-    printf("3 - Editar livro\n");
-    printf("4 - Listar livros\n");
-    printf("5 - Buscar livro por nome\n");
-    printf("6 - Buscar livro por autor\n");
-    printf("7 - Buscar livro por gênero\n");
-    printf("8 - Alugar livro\n");
-    printf("9 - Devolver livro\n");
-    printf("10 - Verificar status de um livro\n");
-    printf("11 - Sair\n");
-    printf("Escolha: ");
-}
-
 int main() {
     setlocale(LC_ALL, "Portuguese"); // Configura o locale para suportar caracteres acentuados
 
-    Catalogo *catalogo = catalogo_init(); // Inicializa o catálogo
-    HashTable *generoh = hash_table_init(100); // Inicializa a tabela hash para gêneros
-    HashTable *autorh = hash_table_init(100);  // Inicializa a tabela hash para autores
+    // Inicializa o catálogo e as tabelas hash
+    Catalogo *catalogo = catalogo_init();
+    HashTable *generoh = hash_table_init(10); // Tabela hash para gêneros
+    HashTable *autorh = hash_table_init(10);  // Tabela hash para autores
 
-    char buffer[10];
-    int opcao;
+    // Adiciona alguns livros para teste
+    Livro *livro1 = livro_init("O Senhor dos Anéis", "Fantasia", "J.R.R. Tolkien");
+    Livro *livro2 = livro_init("1984", "Distopia", "George Orwell");
+    Livro *livro3 = livro_init("Dom Casmurro", "Romance", "Machado de Assis");
 
-    do {
-        exibir_menu();
-        if (fgets(buffer, sizeof(buffer), stdin) == NULL) { // Caso o usuário encerre o terminal
-            opcao = 11; // Atribui a opção 11 -> saída do programa
-        } else {
-            opcao = atoi(buffer); // Converte a entrada para int
+    printf("\nAdicionando livros...\n");
 
-            switch (opcao) {
-                case 1: { // Adicionar livro
-                    char nome[100], autor_str[100], genero_str[50];
-                    printf("Digite o nome do livro: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+    // Adiciona os livros ao catálogo e às tabelas hash
+    add_livro(catalogo, livro1);
+    inserir_livro(generoh, livro1, livro1->genero);
+    inserir_livro(autorh, livro1, livro1->autor);
 
-                    printf("Digite o autor do livro: ");
-                    fgets(autor_str, sizeof(autor_str), stdin);
-                    autor_str[strcspn(autor_str, "\n")] = '\0';
+    add_livro(catalogo, livro2);
+    inserir_livro(generoh, livro2, livro2->genero);
+    inserir_livro(autorh, livro2, livro2->autor);
 
-                    printf("Digite o gênero do livro: ");
-                    fgets(genero_str, sizeof(genero_str), stdin);
-                    genero_str[strcspn(genero_str, "\n")] = '\0';
+    add_livro(catalogo, livro3);
+    inserir_livro(generoh, livro3, livro3->genero);
+    inserir_livro(autorh, livro3, livro3->autor);
 
-                    Livro *novo_livro = livro_init(nome, genero_str, autor_str);
-                    if (novo_livro) {
-                        add_livro(catalogo, novo_livro);
-                        inserir_livro(generoh,novo_livro, genero_str); // Insere na tabela hash de gêneros
-                        inserir_livro(autorh, novo_livro, autor_str);  // Insere na tabela hash de autores
-                        printf("Livro adicionado com sucesso!\n");
-                    } else {
-                        printf("Erro ao criar o livro.\n");
-                    }
-                    break;
-                }
+    // Imprime as tabelas hash de gêneros e autores
+    printf("\nTabela Hash de Gêneros:\n");
+    imprimir_tabela_hash(generoh);
 
-                case 2: { // Remover ou decrementar livro
-                    char nome[100];
-                    printf("Digite o nome do livro a ser removido ou decrementado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+    printf("\nTabela Hash de Autores:\n");
+    imprimir_tabela_hash(autorh);
 
-                    remover_livro(catalogo, nome);
-                    break;
-                }
+    printf("\nCatálogo:\n");
+    listar_livros(catalogo);
 
-                case 3: { // Editar livro
-                    char nome[100], novo_nome[100], autor[100], genero[50];
-                    printf("Digite o nome do livro a ser renomeado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+    // Teste: Renomear um livro
+    printf("\nRenomeando '1984' para 'Mil Novecentos e Oitenta e Quatro'...\n");
+    editar_livro(catalogo, "1984", "Mil Novecentos e Oitenta e Quatro", "George Orwell");
+    edita_livro(generoh, "1984", "Mil Novecentos e Oitenta e Quatro", "Distopia");
+    edita_livro(autorh, "1984", "Mil Novecentos e Oitenta e Quatro", "George Orwell");
 
-                    printf("Digite o autor do livro a ser editado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+    printf("\nTabela Hash de Gêneros após renomear:\n");
+    imprimir_tabela_hash(generoh);
 
-                    printf("Digite o gênero do livro a ser editado: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+    printf("\nTabela Hash de Autores após renomear:\n");
+    imprimir_tabela_hash(autorh);
 
-                    printf("Digite o novo nome do livro: ");
-                    fgets(novo_nome, sizeof(novo_nome), stdin);
-                    novo_nome[strcspn(novo_nome, "\n")] = '\0';
+    printf("\nCatálogo após renomear:\n");
+    listar_livros(catalogo);
 
+    // Teste: Alugar um livro
+    printf("\nAlugando 'O Senhor dos Anéis'...\n");
+    emprestar_livro(catalogo, "O Senhor dos Anéis", "J.R.R. Tolkien");
 
+    printf("\nCatálogo após aluguel:\n");
+    listar_livros(catalogo);
 
-                    Livro* editado =  editar_livro(catalogo, nome, novo_nome, autor);
-                    edita_livro(autorh,nome,novo_nome,autor);
-                    edita_livro(generoh,nome,novo_nome,genero);
-                    if (editado) {
-                        printf("Livro editado com sucesso!\n");
-                    } else {
-                        printf("Erro ao editar o livro.\n");
-                    }
-                    break;
-                }
+    // Teste: Devolver um livro
+    printf("\nDevolvendo 'O Senhor dos Anéis'...\n");
+    devolve_livro(catalogo, "O Senhor dos Anéis", "J.R.R. Tolkien");
 
-                case 4: { // Listar livros
-                    listar_livros(catalogo);
-                    break;
-                }
+    printf("\nCatálogo após devolução:\n");
+    listar_livros(catalogo);
 
-                case 5: { // Buscar livro por nome
-                    char nome[100];
-                    printf("Digite o nome do livro a ser buscado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+    // Teste: Remover um livro
+    printf("\nRemovendo 'Dom Casmurro'...\n");
+    remover_livro(catalogo, "Dom Casmurro");
+    deletar(generoh, "Dom Casmurro", "Romance");
+    deletar(autorh, "Dom Casmurro", "Machado de Assis");
 
-                    int encontrados = buscar_por_nome(catalogo, nome);
-                    if (encontrados == 0) {
-                        printf("Livro não encontrado.\n");
-                    }
-                    break;
-                }
+    printf("\nTabela Hash de Gêneros após remoção:\n");
+    imprimir_tabela_hash(generoh);
 
-                case 6: { // Buscar por autor (usando tabela hash)
-                    char autor[100];
-                    printf("Digite o nome do autor a ser buscado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+    printf("\nTabela Hash de Autores após remoção:\n");
+    imprimir_tabela_hash(autorh);
 
-                    buscar_por_no(autorh, autor); // Busca na tabela hash de autores
-                    break;
-                }
+    printf("\nCatálogo após remoção:\n");
+    listar_livros(catalogo);
 
-                case 7: { // Buscar por gênero (usando tabela hash)
-                    char genero[50];
-                    printf("Digite o gênero a ser buscado: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+    // Teste: Adicionar um mesmo livro novamente
+    printf("\nAdicionando novamente 'Dom Casmurro'...\n");
+    add_livro(catalogo, livro3);
+    inserir_livro(generoh, livro3, livro3->genero);
+    inserir_livro(autorh, livro3, livro3->autor);
 
-                    buscar_por_no(generoh, genero); // Busca na tabela hash de gêneros
-                    break;
-                }
+    printf("\nTabela Hash de Gêneros após re-adicionar:\n");
+    imprimir_tabela_hash(generoh);
 
-                case 8: { // Alugar livro
-                    char nome[100], autor[100];
-                    printf("Digite o nome do livro a ser status: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+    printf("\nTabela Hash de Autores após re-adicionar:\n");
+    imprimir_tabela_hash(autorh);
 
-                    printf("Digite o autor do livro a ser status: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+    printf("\nCatálogo após re-adicionar:\n");
+    listar_livros(catalogo);
 
-                    int resultado = emprestar_livro(catalogo, nome, autor);
-                    if (resultado == 1) {
-                        printf("Livro status com sucesso!\n");
-                    } else if (resultado == 0) {
-                        printf("Livro indisponível para aluguel.\n");
-                    } else {
-                        printf("Erro ao tentar alugar o livro.\n");
-                    }
-                    break;
-                }
+    
+   // Teste: Buscar status inválido ou inexistente 
 
-                case 9: { // Devolver livro
-                    char nome[100], autor[100];
-                    printf("Digite o nome do livro a ser devolvido: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
-                    printf("Digite o autor do livro a ser devolvido: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
-                    int resultado = devolve_livro(catalogo, nome, autor);
-                    if (resultado == 1) {
-                        printf("Livro devolvido com sucesso!\n");
-                    } else if (resultado == 2) {
-                        printf("Livro adicionado como uma nova doação!\n");
-                    } else {
-                        printf("Erro ao tentar devolver o livro.\n");
-                    }
-                    break;
-                }
-
-                case 10: { // Verificar status de um livro
-                    char nome[100], autor[100];
-                    printf("Digite o nome do livro a ser consultado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
-
-                    printf("Digite o autor do livro a ser consultado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
-
-                    verificar_status(catalogo, nome, autor);
-                    break;
-                }
-
-                case 11: { // Sair
-                    hash_free(generoh);            // Libera memória da tabela hash de gêneros
-                    hash_free(autorh);             // Libera memória da tabela hash de autores
-                    free_catalogo(catalogo);      // Libera memória do catálogo
-                    printf("Encerrando o programa...\n");
-                    break;
-                }
-
-                default:
-                    printf("Opção inválida! Tente novamente.\n");
-            }
-        }
-    } while (opcao != 11);
-
-    return 0;
+   ///Liberação 
 }

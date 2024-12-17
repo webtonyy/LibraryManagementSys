@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_OPEN_H
 #define HASH_TABLE_OPEN_H
 
-#define TABLE_SIZE 100
+#define TABLE_SIZE 10
 
 #include "../include/catalogo.h"
 
@@ -26,6 +26,7 @@ int funcaohash_string(const char *nome);                      // Calcula o índi
 int inserir_livro(HashTable *t, Livro *l, const char *nome_no); // Insere um livro na tabela hash
 void deletar(HashTable *t, const char *nome, const char *nome_no); // Deleta um livro da tabela hash
 void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto, const char *nome_no); // Edita os dados de um livro existente
+void imprimir_tabela_hash(HashTable *hashTable);
 void buscar_por_no(HashTable *t, const char *nome_no);        // Busca todos os livros associados a um nó específico
 void hash_free(HashTable *t);                                 // Libera toda a memória associada à tabela hash
 

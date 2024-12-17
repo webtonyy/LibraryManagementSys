@@ -23,6 +23,7 @@ typedef struct Livro {
 // Estrutura do nó da árvore binária
 typedef struct NoArvore {
     Livro *livro;           // Ponteiro para o livro armazenado no nó
+    struct NoArovre *pai;
     struct NoArvore *esquerda;
     struct NoArvore *direita;
 } No;

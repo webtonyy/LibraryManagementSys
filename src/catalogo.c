@@ -46,6 +46,7 @@ No* no_init(Livro *livro) {
     novo_no->livro = livro;
     novo_no->esquerda = NULL;
     novo_no->direita = NULL;
+    novo_no->pai = NULL;
 
     return novo_no;
 }
@@ -282,7 +283,7 @@ void remover_livro(Catalogo *c, const char *nome) {
     // Remove o livro usando a função auxiliar
     c->raiz = remove_aux(c->raiz, nome, count > 1 ? autor : NULL);
 
-    if (c && c -> raiz != NULL ) { 
+    if (c) { 
         c -> nl--;
         printf("Livro removido com sucesso!\n");
     } else printf("Erro ao tentar remover'%s'\n", nome); 

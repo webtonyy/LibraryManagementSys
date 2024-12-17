@@ -25,8 +25,8 @@ int funcaohash_string(const char *nome) {
 }
 
 // Função para inserir um livro na tabela hash
-int inserir_livro(HashTable *t,Livro *l, const char *nome_no) {
-    // Normaliza o nome do nó (implementação de normalize_string não fornecida)
+int inserir_livro(HashTable *t, Livro *l, const char *nome_no) {
+    // Normaliza o nome do nó (gênero ou autor)
     char *no_normalizado = normalize_string(nome_no);
     if (!no_normalizado) {
         fprintf(stderr, "Falha ao normalizar nome do nó: %s\n", nome_no);
@@ -36,96 +36,82 @@ int inserir_livro(HashTable *t,Livro *l, const char *nome_no) {
     // Calcula o índice na tabela hash usando a função hash
     int id_no = funcaohash_string(no_normalizado);
 
-    // Procura pelo nó na tabela
+    // Procura pelo nó na tabela hash
     NoHash *atual = t->tabela[id_no];
     while (atual != NULL) {
-        if (strcmp(normalize_string(atual->nome), no_normalizado) == 0) {
-            // Nó encontrado, verifica se o livro já existe
+        if (strcmp(atual->nome, no_normalizado) == 0) {
+            // Nó encontrado, verifica se o livro está presente
             for (int i = 0; i < atual->quantidade; i++) {
-                Livro *livro_atual = atual->livros[i];
-                if (strcmp(livro_atual->nome, l->nome) == 0) {
-                    // Livro já existe, incrementa a quantidade
-                    livro_atual->qtd++; // Incrementa a quantidade 
-                    free(no_normalizado);
+                Livro *livro = atual->livros[i];
+                if (strcmp(livro->nome, l->nome) == 0 && strcmp(livro->autor, l->autor) == 0) {
+                    // Livro encontrado, incrementa a quantidade
+                    livro->qtd++;
+                    printf("Quantidade do livro '%s' do autor '%s' incrementada.\n", l->nome, l->autor);
                     return 1;
                 }
             }
 
-            // Adiciona um novo livro ao vetor de livros do nó
+            // Livro não encontrado no nó, adiciona à lista de livros
             if (atual->quantidade == atual->capacidade) {
                 // Redimensiona o vetor de livros se necessário
                 atual->capacidade *= 2;
                 atual->livros = realloc(atual->livros, atual->capacidade * sizeof(Livro *));
                 if (!atual->livros) {
-                    fprintf(stderr, "Falha ao redimensionar vetor de livros.\n");
-                    free(no_normalizado);
+                    fprintf(stderr, "Erro ao redimensionar vetor de livros.\n");
                     return 0;
                 }
             }
 
-            // Cria e adiciona um novo livro
-            Livro *novo_livro = (Livro *)malloc(sizeof(Livro));
-            if (!novo_livro) {
-                fprintf(stderr, "Falha de alocação de memória para o livro.\n");
-                free(no_normalizado);
-                return 0;
-            }
+            // Cria e adiciona um novo livro ao nó
+            Livro *novo_livro = malloc(sizeof(Livro));
             novo_livro->nome = strdup(l->nome);
-            novo_livro->autor = strdup(l->autor); // Autor pode ser vazio ou definido posteriormente
-            novo_livro->genero = strdup(l->genero); // O gênero ou categoria é baseado no nó
-            novo_livro->qtd = 1; // Primeira cópia do livro
+            novo_livro->autor = strdup(l->autor);
+            novo_livro->genero = strdup(l->genero);
+            novo_livro->qtd = 1;
             novo_livro->status = false;
 
             atual->livros[atual->quantidade++] = novo_livro;
+            printf("Livro '%s' do autor '%s' adicionado ao nó existente '%s'.\n", l->nome, l->autor, no_normalizado);
 
-            free(no_normalizado);
             return 1;
         }
         atual = atual->proximo; // Avança para o próximo nó em caso de colisão
     }
 
-    // Nó não encontrado, cria um novo nó na tabela hash
-    NoHash *novo_no = (NoHash *)malloc(sizeof(NoHash));
+    // Nó correspondente não encontrado, cria um novo nó e adiciona o livro a ele
+    NoHash *novo_no = malloc(sizeof(NoHash));
     if (!novo_no) {
-        fprintf(stderr, "Falha de alocação de memória para o nó.\n");
-        free(no_normalizado);
+        fprintf(stderr, "Erro ao alocar memória para o novo nó.\n");
         return 0;
     }
+
     novo_no->nome = strdup(no_normalizado);
+    novo_no->quantidade = 1;
     novo_no->capacidade = 10; // Capacidade inicial do vetor de livros
-    novo_no->quantidade = 0;
-    novo_no->livros = (Livro **)malloc(novo_no->capacidade * sizeof(Livro *));
+    novo_no->livros = malloc(novo_no->capacidade * sizeof(Livro *));
     if (!novo_no->livros) {
-        fprintf(stderr, "Falha de alocação de memória para o vetor de livros.\n");
+        fprintf(stderr, "Erro ao alocar memória para o vetor de livros.\n");
         free(novo_no->nome);
         free(novo_no);
-        free(no_normalizado);
         return 0;
     }
 
     // Cria e adiciona o primeiro livro ao novo nó
-    Livro *novo_livro = (Livro *)malloc(sizeof(Livro));
-    if (!novo_livro) {
-        fprintf(stderr, "Falha de alocação de memória para o livro.\n");
-        free(novo_no->livros);
-        free(novo_no->nome);
-        free(novo_no);
-        free(no_normalizado);
-        return 0;
-    }
+    Livro *novo_livro = malloc(sizeof(Livro));
     novo_livro->nome = strdup(l->nome);
-    novo_livro->autor = strdup(""); // Autor pode ser vazio ou definido posteriormente
-    novo_livro->genero = strdup(nome_no); // O gênero ou categoria é baseado no nó
-    novo_livro->qtd = 1; // Primeira cópia do livro
+    novo_livro->autor = strdup(l->autor);
+    novo_livro->genero = strdup(l->genero);
+    novo_livro->qtd = 1;
     novo_livro->status = false;
 
-    novo_no->livros[novo_no->quantidade++] = novo_livro;
+    novo_no->livros[0] = novo_livro;
 
     // Insere o novo nó na tabela hash
     novo_no->proximo = t->tabela[id_no];
     t->tabela[id_no] = novo_no;
 
-    free(no_normalizado);
+    printf("Nó '%s' criado e livro '%s' do autor '%s' adicionado.\n", no_normalizado, l->nome, l->autor);
+
     return 1;
 }
 
@@ -155,20 +141,17 @@ void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto
 
                     printf("Livro renomeado com sucesso! Novo título: '%s'\n", livro->nome);
 
-                    free(no_normalizado); // Libera memória alocada para o nome normalizado
                     return;
                 }
             }
 
             printf("Livro '%s' não encontrado no nó '%s'.\n", nome_errado, nome_no);
-            free(no_normalizado); // Libera memória alocada para o nome normalizado
             return;
         }
         atual = atual->proximo; // Avança para o próximo nó em caso de colisão
     }
 
     printf("Nó '%s' não encontrado.\n", nome_no);
-    free(no_normalizado); // Libera memória alocada para o nome normalizado
 }
 
 
@@ -228,13 +211,11 @@ void deletar(HashTable *t, const char *nome, const char *nome_no) {
                         }
                     }
 
-                    free(no_normalizado); // Libera memória alocada para o nome normalizado
                     return;
                 }
             }
 
             printf("Livro '%s' não encontrado no nó '%s'.\n", nome, nome_no);
-            free(no_normalizado); // Libera memória alocada para o nome normalizado
             return;
         }
 
@@ -243,7 +224,6 @@ void deletar(HashTable *t, const char *nome, const char *nome_no) {
     }
 
     printf("Nó '%s' não encontrado.\n", nome_no);
-    free(no_normalizado); // Libera memória alocada para o nome normalizado
 }
 
 
@@ -268,7 +248,6 @@ void buscar_por_no(HashTable *t, const char *nome_no) {
 
             if (atual->quantidade == 0) {
                 printf("Nenhum livro encontrado neste nó.\n");
-                free(no_normalizado);
                 return;
             }
 
@@ -280,7 +259,6 @@ void buscar_por_no(HashTable *t, const char *nome_no) {
                     livro->genero);
             }
 
-            free(no_normalizado);
             return;
         }
         atual = atual->proximo; // Avança para o próximo nó em caso de colisão
@@ -288,8 +266,29 @@ void buscar_por_no(HashTable *t, const char *nome_no) {
 
     // Caso o nó não seja encontrado
     printf("Nó '%s' não encontrado.\n", nome_no);
-    free(no_normalizado);
 }
+
+void imprimir_tabela_hash(HashTable *hashTable) {
+    printf("\n--- Tabela Hash ---\n");
+    for (int i = 0; i < hashTable->tamanho; i++) {
+        printf("Bucket %d:\n", i);
+        NoHash *noAtual = hashTable->tabela[i];
+        
+        while (noAtual != NULL) {
+            printf("  Gênero/Autor: %s\n", noAtual->nome);
+            printf("  Livros:\n");
+            for (int j = 0; j < noAtual->quantidade; j++) {
+                Livro *livro = noAtual->livros[j];
+                printf("    - Título: %s, Autor: %s, Gênero: %s\n", 
+                    livro->nome, livro->autor, livro->genero);
+            }
+            noAtual = noAtual->proximo;
+        }
+    }
+    printf("--- Fim da Tabela Hash ---\n");
+}
+
+
 
 // Função para liberar toda a memória associada à tabela hash
 void hash_free(HashTable *t) {
