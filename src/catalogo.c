@@ -31,24 +31,23 @@ Livro* livro_init(const char *nome, const char *genero, const char *autor) {
 // Função para inicializar um nó da árvore binária
 No* no_init(Livro *livro) {
     if (!livro) {
-        printf("Erro: Livro inválido.\n");
+        fprintf(stderr, "Erro: Livro inválido.\n");
         return NULL;
     }
 
-    // Aloca memória para o nó
     No *novo_no = (No *)malloc(sizeof(No));
     if (!novo_no) {
         perror("Erro ao alocar memória para o nó");
         exit(EXIT_FAILURE);
     }
 
-    // Inicializa os campos do nó
     novo_no->livro = livro;
     novo_no->esquerda = NULL;
     novo_no->direita = NULL;
 
     return novo_no;
 }
+
 
 
 // Inicializa um l catálogo
@@ -68,32 +67,35 @@ Catalogo* catalogo_init() {
 // Função auxiliar para adicionar um nó à árvore binária
 No* add_aux(No *atual, Livro *livro) {
     if (!atual) {
-        // Cria um novo nó se o local estiver vazio
+        printf("Criando um novo nó para o livro '%s'.\n", livro ? livro->nome : "NULL");
         No *novo_no = no_init(livro);
-        if (!novo_no) {
-            perror("Erro ao alocar memória para o nó");
-            exit(EXIT_FAILURE);
-        }
         return novo_no;
     }
 
-    // Compara os livros pelo título e autor
+    if (!livro || !livro->nome || !atual || !atual->livro || !atual->livro->nome) {
+        fprintf(stderr, "Erro: Ponteiro nulo detectado em add_aux.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Comparando '%s' com '%s'.\n", livro->nome, atual->livro->nome);
+
     int cmp_nome = strcmp(livro->nome, atual->livro->nome);
     int cmp_autor = strcmp(livro->autor, atual->livro->autor);
 
     if (cmp_nome < 0) {
-        // Adiciona à subárvore esquerda
+        printf("Adicionando '%s' à subárvore esquerda de '%s'.\n", livro->nome, atual->livro->nome);
         atual->esquerda = add_aux(atual->esquerda, livro);
     } else if (cmp_nome > 0 || cmp_autor != 0) {
-        // Adiciona à subárvore direita
+        printf("Adicionando '%s' à subárvore direita de '%s'.\n", livro->nome, atual->livro->nome);
         atual->direita = add_aux(atual->direita, livro);
     } else {
-        // Incrementa a quantidade se o livro já existir
+        printf("Livro '%s' já existe. Incrementando quantidade.\n", livro->nome);
         atual->livro->qtd++;
     }
 
     return atual;
 }
+
 
 // Função principal para adicionar um livro ao catálogo
 Livro* add_livro(Catalogo *c, Livro *l) {
@@ -141,7 +143,7 @@ void listar_livros(Catalogo *c) {
     listar_aux(c->raiz);
 }
 
-No* edita_aux(No *atual, const char *nome_errado, const char *autor, const char *novo_nome) {
+No* edita_aux(No *atual, const char *nome_errado, const char *autor, const char *novo_nome, No **editado) {
     if (!atual) return NULL;
 
     // Compara o título e o autor do livro
@@ -150,14 +152,15 @@ No* edita_aux(No *atual, const char *nome_errado, const char *autor, const char 
 
     if (cmp_nome < 0) {
         // Procura na subárvore esquerda
-        atual->esquerda = edita_aux(atual->esquerda, nome_errado, autor, novo_nome);
-    } else if (cmp_nome > 0 || cmp_autor != 0) {
+        atual->esquerda = edita_aux(atual->esquerda, nome_errado, autor, novo_nome, editado);
+    } else if (cmp_nome > 0) {
         // Procura na subárvore direita
-        atual->direita = edita_aux(atual->direita, nome_errado, autor, novo_nome);
+        atual->direita = edita_aux(atual->direita, nome_errado, autor, novo_nome, editado);
     } else if (cmp_autor == 0) {
         // Livro encontrado: renomeia o título
+        free(atual->livro->nome);
         atual->livro->nome = strdup(novo_nome); // Aloca e copia o novo nome
-        printf("Livro renomeado com sucesso! Novo título: '%s'\n", atual->livro->nome);
+        *editado = atual; // Atualiza o ponteiro para o nó editado
     }
 
     return atual;
@@ -237,6 +240,7 @@ No* remove_aux(No *atual, const char *nome, const char *autor) {
         atual->direita = remove_aux(atual->direita, sucessor->livro->nome, sucessor->livro->autor);
     }
 
+    
     return atual;
 }
 
@@ -247,28 +251,41 @@ Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome,
         return NULL;
     }
 
-    // Edita o livro usando a função auxiliar
-    No *editado = edita_aux(c->raiz, nome_errado, autor, novo_nome);
+    // Localiza e renomeia o livro usando a função auxiliar
+    No *editado = NULL;
+    c->raiz = edita_aux(c->raiz, nome_errado, autor, novo_nome, &editado);
 
     if (!editado) {
-        printf("Erro: Livro não encontrado no catálogo.\n");
+        printf("Erro: Livro '%s' do autor '%s' não encontrado no catálogo.\n", nome_errado, autor);
         return NULL;
     }
 
-    // Verifica se a posição do nó ainda é válida após a edição
-    int qtd = editado->livro->qtd; // Salva a quantidade de exemplares
-    editado->livro->qtd = 1;      // Temporariamente ajusta para 1 para remoção
-    c->raiz = remove_aux(c->raiz, novo_nome, autor); // Remove o nó editado
+    // Cria uma cópia independente dos dados do livro editado
+    Livro *livro_temp = malloc(sizeof(Livro));
+    if (!livro_temp) {
+        perror("Erro ao alocar memória para o livro temporário");
+        exit(EXIT_FAILURE);
+    }
+    int qtd = editado->livro->qtd;
+    editado->livro->qtd =1;
+    livro_temp->nome = strdup(editado->livro->nome);
+    livro_temp->autor = strdup(editado->livro->autor);
+    livro_temp->genero = strdup(editado->livro->genero);
+    livro_temp->qtd = qtd;
+    livro_temp->status = editado->livro->status;
 
-    Livro *novo_livro = livro_init(novo_nome,editado->livro->genero,autor);
-    novo_livro->qtd = qtd;       // Restaura a quantidade original
-    novo_livro->status = editado->livro->status;
+    // Remove o nó original da árvore
+    c->raiz = remove_aux(c->raiz, novo_nome, autor);
 
-    c->raiz = add_aux(c->raiz, novo_livro); // Reinsere o nó com os dados atualizados
+    // Reinsere a cópia atualizada na posição correta
+    c->raiz = add_aux(c->raiz, livro_temp);
 
-    printf("Livro '%s' atualizado com sucesso no catálogo.\n", novo_livro->nome);
-    return novo_livro;
+    printf("Livro '%s' atualizado e reposicionado com sucesso.\n", novo_nome);
+    return livro_temp;
 }
+
+
+
 
 // Função principal para remover um livro do catálogo
 void remover_livro(Catalogo *c, const char *nome, const char *autor) {
