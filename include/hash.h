@@ -29,5 +29,7 @@ void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto
 void imprimir_tabela_hash(HashTable *hashTable);
 void buscar_por_no(HashTable *t, const char *nome_no);        // Busca todos os livros associados a um nó específico
 void hash_free(HashTable *t);                                 // Libera toda a memória associada à tabela hash
+void salvar_hash(HashTable *t, const char *nome_arquivo);     // Salva a hash em um arquivo binário externo
+HashTable* carregar_hash(const char *nome_arquivo);           // Carrega uma hash de um arquivo binário externo
 
 #endif

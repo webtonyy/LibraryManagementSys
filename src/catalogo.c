@@ -546,3 +546,125 @@ void free_catalogo(Catalogo *c) {
     // Libera a estrutura do catálogo
     free(c);
 }
+
+
+void salvar_aux(No *raiz, FILE *arquivo) {
+    if (!raiz) {
+        bool nulo = true;
+        fwrite(&nulo, sizeof(bool), 1, arquivo); // Marcando nó nulo
+        return;
+    }
+
+    bool nulo = false;
+    fwrite(&nulo, sizeof(bool), 1, arquivo); // Marca nó não-nulo
+
+    // Salva os dados do livro
+    Livro *livro = raiz->livro;
+    int nome_len = strlen(livro->nome) + 1;
+    int genero_len = strlen(livro->genero) + 1;
+    int autor_len = strlen(livro->autor) + 1;
+
+    fwrite(&nome_len, sizeof(int), 1, arquivo);
+    fwrite(livro->nome, sizeof(char), nome_len, arquivo);
+    fwrite(&genero_len, sizeof(int), 1, arquivo);
+    fwrite(livro->genero, sizeof(char), genero_len, arquivo);
+    fwrite(&autor_len, sizeof(int), 1, arquivo);
+    fwrite(livro->autor, sizeof(char), autor_len, arquivo);
+    fwrite(&livro->qtd, sizeof(int), 1, arquivo);
+    fwrite(&livro->status, sizeof(bool), 1, arquivo);
+
+    // Salva recursivamente as subárvores esquerda e direita
+    salvar_aux(raiz->esquerda, arquivo);
+    salvar_aux(raiz->direita, arquivo);
+}
+
+void salvar_catalogo(Catalogo *c, const char *nome_arquivo) {
+    if (!c || !nome_arquivo) return;
+
+    FILE *arquivo = fopen(nome_arquivo, "wb");
+    if (!arquivo) {
+        perror("Erro ao salvar o arquivo de configurações.");
+        return;
+    }
+
+    salvar_aux(c->raiz, arquivo); // Salva a árvore binária
+    fclose(arquivo);
+}
+
+
+No* carregar_aux(FILE *arquivo) {
+    bool nulo;
+    fread(&nulo, sizeof(bool), 1, arquivo);
+
+    if (nulo) return NULL;
+
+    // Lê os dados do livro
+    int nome_len, genero_len, autor_len;
+    fread(&nome_len, sizeof(int), 1, arquivo);
+    
+    char *nome = malloc(nome_len);
+    fread(nome, sizeof(char), nome_len, arquivo);
+
+    fread(&genero_len, sizeof(int), 1, arquivo);
+    
+    char *genero = malloc(genero_len);
+    fread(genero, sizeof(char), genero_len, arquivo);
+
+    fread(&autor_len, sizeof(int), 1, arquivo);
+    
+    char *autor = malloc(autor_len);
+    fread(autor, sizeof(char), autor_len, arquivo);
+
+    int qtd;
+    bool status;
+    
+    fread(&qtd, sizeof(int), 1, arquivo);
+    fread(&status, sizeof(bool), 1, arquivo);
+
+    Livro *livro = livro_init(nome, genero, autor);
+    
+    if (!livro) {
+        free(nome);
+        free(genero);
+        free(autor);
+        return NULL;
+    }
+    
+    livro->qtd = qtd;
+    livro->status = status;
+
+    No *no = no_init(livro);
+
+    // Carrega recursivamente as subárvores esquerda e direita
+    no->esquerda = carregar_aux(arquivo);
+    no->direita = carregar_aux(arquivo);
+
+    return no;
+}
+
+Catalogo* carregar_catalogo(const char *nome_arquivo) {
+    FILE *arquivo = fopen(nome_arquivo,"rb");
+    
+    Catalogo *c = catalogo_init();
+    
+    if (!arquivo) {
+        printf("\nArquivo de configurações não encontrado. Criando um novo.\n");
+        arquivo = fopen(nome_arquivo, "wb");
+
+        if (!arquivo) {
+            perror("Erro ao criar o arquivo");
+            return NULL;
+        }
+
+        fclose(arquivo);
+
+
+        return c;
+    }
+
+    c->raiz = carregar_aux(arquivo); // Carrega a árvore binária
+    fclose(arquivo);
+
+    return c;
+}
+

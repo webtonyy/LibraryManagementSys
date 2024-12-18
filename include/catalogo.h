@@ -45,4 +45,6 @@ int emprestar_livro(Catalogo *c, char *nome, char *autor); // Retorna 1 se aluga
 int buscar_por_nome(Catalogo *c, const char *nome); // Busca todos os livros com o mesmo título
 void verificar_status(Catalogo *c, const char *nome, const char *autor);
 void free_catalogo(Catalogo *c);
+void salvar_catalogo(Catalogo *c, const char *nome_arquivo);
+Catalogo* carregar_catalogo(const char *nome_arquivo);
 #endif // _CATALOGO_H

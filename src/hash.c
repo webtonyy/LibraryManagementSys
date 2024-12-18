@@ -333,3 +333,120 @@ void hash_free(HashTable *t) {
 }
 
 
+void salvar_hash(HashTable *t, const char *nome_arquivo) {
+    if (!t || !nome_arquivo) return;
+
+    FILE *arquivo = fopen(nome_arquivo, "wb");
+    if (!arquivo) {
+        perror("Erro ao salvar o arquivo de configurações!");
+        return;
+    }
+
+    // Salva o tamanho da tabela
+    fwrite(&t->tamanho, sizeof(int), 1, arquivo);
+
+    // Salva cada bucket da tabela hash
+    for (int i = 0; i < t->tamanho; i++) {
+        NoHash *atual = t->tabela[i];
+        while (atual) {
+            // Salva os dados do nó
+            int nome_len = strlen(atual->nome) + 1;
+            fwrite(&nome_len, sizeof(int), 1, arquivo);
+            fwrite(atual->nome, sizeof(char), nome_len, arquivo);
+            fwrite(&atual->quantidade, sizeof(int), 1, arquivo);
+
+            // Salva os livros associados ao nó
+            for (int j = 0; j < atual->quantidade; j++) {
+                Livro *livro = atual->livros[j];
+                int nome_livro_len = strlen(livro->nome) + 1;
+                int autor_len = strlen(livro->autor) + 1;
+                int genero_len = strlen(livro->genero) + 1;
+
+                fwrite(&nome_livro_len, sizeof(int), 1, arquivo);
+                fwrite(livro->nome, sizeof(char), nome_livro_len, arquivo);
+                fwrite(&autor_len, sizeof(int), 1, arquivo);
+                fwrite(livro->autor, sizeof(char), autor_len, arquivo);
+                fwrite(&genero_len, sizeof(int), 1, arquivo);
+                fwrite(livro->genero, sizeof(char), genero_len, arquivo);
+                fwrite(&livro->qtd, sizeof(int), 1, arquivo);
+                fwrite(&livro->status, sizeof(bool), 1, arquivo);
+            }
+
+            atual = atual->proximo;
+        }
+    }
+
+    fclose(arquivo);
+}
+
+
+HashTable* carregar_hash(const char *nome_arquivo) {
+    if (!nome_arquivo) return NULL;
+
+    FILE *arquivo = fopen(nome_arquivo, "rb");
+    if (!arquivo) {
+        // Caso o arquivo não exista, cria um novo
+        arquivo = fopen(nome_arquivo, "wb");
+        if (!arquivo) {
+            perror("Erro ao criar o arquivo");
+            return NULL;
+        }
+        fclose(arquivo);
+        return hash_table_init(100); // Inicializa uma nova tabela hash com tamanho padrão
+    }
+
+    int tamanho;
+    fread(&tamanho, sizeof(int), 1, arquivo);
+
+    HashTable *t = hash_table_init(tamanho);
+
+    for (int i = 0; i < tamanho; i++) {
+        while (true) {
+            int nome_len;
+            if (fread(&nome_len, sizeof(int), 1, arquivo) != 1) break;
+
+            char nome[nome_len];
+            fread(nome, sizeof(char), nome_len, arquivo);
+
+            int quantidade;
+            fread(&quantidade, sizeof(int), 1, arquivo);
+
+            NoHash *novo_no = malloc(sizeof(NoHash));
+            novo_no->nome = strdup(nome);
+            novo_no->quantidade = quantidade;
+            novo_no->capacidade = quantidade;
+            novo_no->livros = malloc(quantidade * sizeof(Livro*));
+            novo_no->proximo = t->tabela[i];
+            t->tabela[i] = novo_no;
+
+            for (int j = 0; j < quantidade; j++) {
+                Livro *livro = malloc(sizeof(Livro));
+
+                int nome_livro_len;
+                fread(&nome_livro_len, sizeof(int), 1, arquivo);
+                livro->nome = malloc(nome_livro_len);
+                fread(livro->nome, sizeof(char), nome_livro_len, arquivo);
+
+                int autor_len;
+                fread(&autor_len, sizeof(int), 1, arquivo);
+                livro->autor = malloc(autor_len);
+                fread(livro->autor, sizeof(char), autor_len, arquivo);
+
+                int genero_len;
+                fread(&genero_len, sizeof(int), 1, arquivo);
+                livro->genero = malloc(genero_len);
+                fread(livro->genero, sizeof(char), genero_len, arquivo);
+
+                fread(&livro->qtd, sizeof(int), 1, arquivo);
+                fread(&livro->status, sizeof(bool), 1, arquivo);
+
+                novo_no->livros[j] = livro;
+            }
+        }
+    }
+
+    fclose(arquivo);
+    return t;
+}
+
+

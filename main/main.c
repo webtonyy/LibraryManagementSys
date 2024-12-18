@@ -5,11 +5,32 @@
 #include "../include/catalogo.h"
 #include "../include/hash.h"
 
+
+// Definindo função para lidar com o sleep() em diferentes SOs:
+
+#ifdef _WIN32
+    #include <windows.h> // Para Sleep() no Windows
+#else
+    #include <unistd.h>  // Para sleep() no Linux/Unix
+#endif
+
+// Função dormir:
+void dormir(int seg) {
+    #ifdef _WIN32
+        Sleep(seg * 1000); // Windows: converte segundos para milissegundos
+    #else
+        sleep(seg);        // Linux/Unix: usa diretamente segundos
+    #endif
+}
+
+
+
 // Função para exibir o menu de opções
 void exibir_menu() {
+    printf("\n=======================================================");
     printf("\nDigite um número para selecionar uma ação:\n");
     printf("1 - Adicionar livro\n");
-    printf("2 - Remover  livro\n");
+    printf("2 - Remover livro\n");
     printf("3 - Editar livro\n");
     printf("4 - Listar livros\n");
     printf("5 - Buscar livro por nome\n");
@@ -19,15 +40,23 @@ void exibir_menu() {
     printf("9 - Devolver livro\n");
     printf("10 - Verificar status de um livro\n");
     printf("11 - Sair\n");
+    printf("=======================================================\n");
     printf("Escolha: ");
 }
 
 int main() {
     setlocale(LC_ALL, "Portuguese"); // Configura o locale para suportar caracteres acentuados
 
-    Catalogo *catalogo = catalogo_init(); // Inicializa o catálogo
-    HashTable *generoh = hash_table_init(100); // Inicializa a tabela hash para gêneros
-    HashTable *autorh = hash_table_init(100);  // Inicializa a tabela hash para autores
+    // Carregando das estruturas de um arquivo binário externo:
+    printf("\nCarregando as configurações iniciais. Por favor, aguarde!\n");
+    dormir(2);
+    Catalogo *catalogo = carregar_catalogo("./savedata/data_c.bin"); 
+    HashTable *generoh = carregar_hash("./savedata/data_g.bin");
+    HashTable *autorh = carregar_hash("./savedata/data_a.bin");
+    printf("Configurações inicializadas com sucesso!\n");
+
+    printf("\nCarregando o menu de opções...\n");
+    dormir(2);
 
     char buffer[10];
     int opcao;
@@ -62,6 +91,8 @@ int main() {
                     // Inicializa um novo livro (aloca memória dinamicamente para os campos)
                     Livro *novo_livro = livro_init(nome, genero_str, autor_str);
 
+                    dormir(1);
+
                     if (novo_livro) {
                         // Adiciona o livro ao catálogo (árvore binária)
                         add_livro(catalogo, novo_livro);
@@ -74,6 +105,9 @@ int main() {
                     } else {
                         printf("Erro ao criar o livro.\n");
                     }
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
 
                     break;
                 }
@@ -93,9 +127,14 @@ int main() {
                     fgets(genero, sizeof(genero), stdin);
                     genero[strcspn(genero, "\n")] = '\0';
 
+                    dormir(1);
+
                     remover_livro(catalogo, nome, autor);
                     deletar(autorh,nome,autor);
-                    deletar(generoh,nome,genero)
+                    deletar(generoh,nome,genero);
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
@@ -122,16 +161,26 @@ int main() {
                     Livro* editado =  editar_livro(catalogo, nome, novo_nome, autor);
                     edita_livro(autorh,nome,novo_nome,autor);
                     edita_livro(generoh,nome,novo_nome,genero);
+
+                    dormir(1);
                     if (editado) {
                         printf("Livro editado com sucesso!\n");
                     } else {
                         printf("Erro ao editar o livro.\n");
                     }
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
                 case 4: { // Listar livros
+
+                    dormir(1);
                     listar_livros(catalogo);
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
@@ -141,10 +190,14 @@ int main() {
                     fgets(nome, sizeof(nome), stdin);
                     nome[strcspn(nome, "\n")] = '\0';
 
+                    dormir(1);
                     int encontrados = buscar_por_nome(catalogo, nome);
                     if (encontrados == 0) {
                         printf("Livro não encontrado.\n");
                     }
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
@@ -154,7 +207,11 @@ int main() {
                     fgets(autor, sizeof(autor), stdin);
                     autor[strcspn(autor, "\n")] = '\0';
 
+                    dormir(1);
                     buscar_por_no(autorh, autor); // Busca na tabela hash de autores
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
@@ -164,7 +221,11 @@ int main() {
                     fgets(genero, sizeof(genero), stdin);
                     genero[strcspn(genero, "\n")] = '\0';
 
+                    dormir(1);
                     buscar_por_no(generoh, genero); // Busca na tabela hash de gêneros
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
@@ -179,6 +240,8 @@ int main() {
                     autor[strcspn(autor, "\n")] = '\0';
 
                     int resultado = emprestar_livro(catalogo, nome, autor);
+
+                    dormir(1);
                     if (resultado == 1) {
                         printf("Livro status com sucesso!\n");
                     } else if (resultado == 0) {
@@ -186,6 +249,10 @@ int main() {
                     } else {
                         printf("Erro ao tentar alugar o livro.\n");
                     }
+
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
@@ -198,6 +265,8 @@ int main() {
                     fgets(autor, sizeof(autor), stdin);
                     autor[strcspn(autor, "\n")] = '\0';
                     int resultado = devolve_livro(catalogo, nome, autor);
+
+                    dormir(1);
                     if (resultado == 1) {
                         printf("Livro devolvido com sucesso!\n");
                     } else if (resultado == 2) {
@@ -205,6 +274,9 @@ int main() {
                     } else {
                         printf("Erro ao tentar devolver o livro.\n");
                     }
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
@@ -219,19 +291,43 @@ int main() {
                     autor[strcspn(autor, "\n")] = '\0';
 
                     verificar_status(catalogo, nome, autor);
+
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
                     break;
                 }
 
                 case 11: { // Sair
-                    hash_free(generoh);            // Libera memória da tabela hash de gêneros
-                    hash_free(autorh);             // Libera memória da tabela hash de autores
-                    free_catalogo(catalogo);      // Libera memória do catálogo
                     printf("Encerrando o programa...\n");
-                    break;
+                    dormir(1);
+
+                    // Salvando as structs nos arquivos binários:
+
+                    printf("\nSalvando os arquivos de configurações...\n");
+                    dormir(1);
+
+                    salvar_catalogo(catalogo,"./savedata/data_c.bin");
+                    salvar_hash(generoh, "./savedata/data_g.bin");
+                    salvar_hash(autorh, "./savedata/data_a.bin");
+                    printf("Arquivos salvos com sucesso!\n");
+
+                    // Limpando as structs temporárias:
+
+                    printf("\nLimpando dados temporários...\n");
+
+                    hash_free(generoh);         
+                    hash_free(autorh);             
+                    free_catalogo(catalogo);      
+
+                    printf("\nPrograma encerrado!\n \nPressione [Enter] para fechar a execução...\n");
+                    getchar();
+                    exit(1);
                 }
 
                 default:
                     printf("Opção inválida! Tente novamente.\n");
+                    printf("\nPressione [Enter] para retornar...\n");
+                    getchar();
             }
         }
     } while (opcao != 11);
