@@ -325,7 +325,7 @@ void hash_free(HashTable *t) {
     // Libera o vetor de ponteiros para os nós da tabela hash
     free(t->tabela);
 
-    // Opcional: Zera os campos da estrutura para evitar acessos inválidos
+    // Zera os campos da estrutura para evitar acessos inválidos
     t->tabela = NULL;
     t->tamanho = 0;
 
