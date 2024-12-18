@@ -59,7 +59,7 @@ char* normalize_string(const char* str) {
 }
 
 
-// Function to count how many books with the same name exist in the catalog
+// Função para contar quantos livros existem com o mesmo nome no catálogo
 void contar_livros(No *no, const char *nome, int *count) {
         if (!no) return;
         contar_livros(no->esquerda, nome, count);
