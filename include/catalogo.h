@@ -50,4 +50,5 @@ void verificar_status(Catalogo *c, const char *nome, const char *autor);
 void free_catalogo(Catalogo *c);
 void salvar_catalogo(Catalogo *c, const char *nome_arquivo);
 Catalogo* carregar_catalogo(const char *nome_arquivo);
+void free_livro(Livro *livro);
 #endif // _CATALOGO_H

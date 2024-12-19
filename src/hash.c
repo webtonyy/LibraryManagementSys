@@ -88,6 +88,8 @@ int inserir_livro(HashTable *t, Livro *l, const char *nome_no) {
 
             atual->livros[atual->quantidade++] = novo_livro;
 
+            free_livro(novo_livro);
+
             free(no_normalizado); // Libera a memória da string normalizada
             return 1;
         }

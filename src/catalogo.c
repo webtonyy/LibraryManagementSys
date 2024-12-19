@@ -21,9 +21,9 @@ Livro* livro_init(const char *nome, const char *genero, const char *autor) {
     l->autor = strdup(autor);
 
     // Normaliza os valores e armazena nos campos correspondentes
-    l->nome_norma = strdup(normalize_string(nome));   // Normaliza o título
-    l->genero_norma = strdup(normalize_string(genero)); // Normaliza o gênero
-    l->autor_norma = strdup(normalize_string(autor));  // Normaliza o autor
+    l->nome_norma = normalize_string(nome);   // Normaliza o título
+    l->genero_norma = normalize_string(genero); // Normaliza o gênero
+    l->autor_norma =normalize_string(autor);  // Normaliza o autor
 
     // Inicializa os outros campos
     l->qtd = 1;                // Inicializa a quantidade como 1
