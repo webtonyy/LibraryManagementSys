@@ -4,6 +4,9 @@
 #include <string.h>
 #include <locale.h>
 #include "../include/aux.h"
+#include "../include/catalogo.h"
+#include "../include/hash.h"
+
 
 
 
@@ -108,6 +111,7 @@ void percorrer_arvore_e_inserir_na_hash_autor(No *no, HashTable *ht) {
     // Percorre a subárvore esquerda e direita recursivamente
     percorrer_arvore_e_inserir_na_hash_autor(no->esquerda, ht);
     percorrer_arvore_e_inserir_na_hash_autor(no->direita, ht);
+
 }
 
 void percorrer_arvore_e_inserir_na_hash_genero(No *no, HashTable *ht) {
@@ -119,4 +123,5 @@ void percorrer_arvore_e_inserir_na_hash_genero(No *no, HashTable *ht) {
     // Percorre a subárvore esquerda e direita recursivamente
     percorrer_arvore_e_inserir_na_hash_genero(no->esquerda, ht);
     percorrer_arvore_e_inserir_na_hash_genero(no->direita, ht);
+
 }

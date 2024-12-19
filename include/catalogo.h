@@ -51,4 +51,6 @@ void free_catalogo(Catalogo *c);
 void salvar_catalogo(Catalogo *c, const char *nome_arquivo);
 Catalogo* carregar_catalogo(const char *nome_arquivo);
 void free_livro(Livro *livro);
+void free_no(No *atual);
+
 #endif // _CATALOGO_H
