@@ -196,16 +196,11 @@ int main() {
 
 
 
-                    Livro* editado =  editar_livro(catalogo, nome, novo_nome, autor);
+                    editar_livro(catalogo, nome, novo_nome, autor,genero);
                     edita_livro(autorh,nome,novo_nome,autor);
                     edita_livro(generoh,nome,novo_nome,genero);
-
                     dormir(1);
-                    if (editado) {
-                        printf("Livro editado com sucesso!\n");
-                    } else {
-                        printf("Erro ao editar o livro.\n");
-                    }
+
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();

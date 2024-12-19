@@ -39,7 +39,7 @@ typedef struct catalogo {
 // Funções principais do catálogo
 Livro* livro_init(const char *nome, const char *genero, const char *autor);
 Catalogo* catalogo_init();
-Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, const char *autor);
+void editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, const char *autor,const char *genero);
 Livro* add_livro(Catalogo *c, Livro *l);
 void remover_livro(Catalogo *c, const char *nome, const char *autor);
 void listar_livros(Catalogo *c);

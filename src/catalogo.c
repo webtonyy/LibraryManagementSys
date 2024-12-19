@@ -56,7 +56,35 @@ No* no_init(Livro *livro) {
     return novo_no;
 }
 
+void free_livro(Livro *livro) {
+    if (!livro) return;
 
+    free(livro->nome);
+    free(livro->nome_norma);
+    free(livro->autor);
+    free(livro->autor_norma);
+    free(livro->genero);
+    free(livro->genero_norma);
+    free(livro);
+}
+
+
+// Libera todos os nós da árvore recursivamente
+void free_no(No *atual) {
+    if (!atual) return;
+
+    // Libera os nós da subárvore esquerda e direita
+    free_no(atual->esquerda);
+    free_no(atual->direita);
+
+    // Libera os campos do livro
+    if (atual->livro) {
+        free_livro(atual->livro);
+    }
+
+    // Libera o nó atual
+    free(atual);
+}
 
 
 // Inicializa um l catálogo
@@ -84,8 +112,6 @@ No* add_aux(No *atual, Livro *livro) {
         fprintf(stderr, "Erro: Ponteiro nulo detectado em add_aux.\n");
         exit(EXIT_FAILURE);
     }
-
-    printf("Comparando '%s' com '%s'.\n", livro->nome, atual->livro->nome);
 
     // Comparações baseadas nos campos normalizados
     int cmp_nome = strcmp(livro->nome_norma, atual->livro->nome_norma);
@@ -127,12 +153,11 @@ void listar_aux(No *no) {
     listar_aux(no->esquerda);
 
     // Imprime os dados do livro no nó atual
-    Livro *livro = no->livro;
     printf("Título: %s | Autor: %s | Gênero: %s | Quantidade: %d \n",
-        livro->nome,   // Usa o nome original para exibição
-        livro->autor,  // Usa o autor original para exibição
-        livro->genero, // Usa o gênero original para exibição
-        livro->qtd);
+        no->livro->nome,   // Usa o nome original para exibição
+        no->livro->autor,  // Usa o autor original para exibição
+        no->livro->genero, // Usa o gênero original para exibição
+        no->livro->qtd);
 
     // Percorre a subárvore direita
     listar_aux(no->direita);
@@ -145,170 +170,126 @@ void listar_livros(Catalogo *c) {
         return;
     }
 
+    
     // Chama a função auxiliar para percorrer a árvore
     listar_aux(c->raiz);
-}
-
-
-No* edita_aux(No *atual, const char *nome_errado, const char *autor, const char *novo_nome, No **editado) {
-    if (!atual) return NULL;
-
-    // Compara o título e o autor do livro usando os campos normalizados
-    int cmp_nome = strcmp(nome_errado, atual->livro->nome_norma);
-    int cmp_autor = strcmp(autor, atual->livro->autor_norma);
-
-    if (cmp_nome < 0) {
-        // Procura na subárvore esquerda
-        atual->esquerda = edita_aux(atual->esquerda, nome_errado, autor, novo_nome, editado);
-    } else if (cmp_nome > 0) {
-        // Procura na subárvore direita
-        atual->direita = edita_aux(atual->direita, nome_errado, autor, novo_nome, editado);
-    } else if (cmp_autor == 0) {
-        // Livro encontrado: renomeia o título
-        free(atual->livro->nome);
-        free(atual->livro->nome_norma); // Libera o nome normalizado antigo
-        atual->livro->nome = strdup(novo_nome); // Aloca e copia o novo nome
-        atual->livro->nome_norma = strdup(normalize_string(novo_nome)); // Atualiza o nome normalizado
-
-        *editado = atual; // Atualiza o ponteiro para o nó editado
-    }
-
-    return atual;
 }
 
 No* remove_aux(No *atual, const char *nome, const char *autor) {
     if (!atual) return NULL;
 
-    // Compara o título e o autor do livro usando os campos normalizados
     int cmp_nome = strcmp(nome, atual->livro->nome_norma);
-    int cmp_autor = autor ? strcmp(autor, atual->livro->autor_norma) : 0;
+    int cmp_autor = strcmp(autor, atual->livro->autor_norma);
 
     if (cmp_nome < 0) {
-        // Procura na subárvore esquerda
         atual->esquerda = remove_aux(atual->esquerda, nome, autor);
     } else if (cmp_nome > 0) {
-        // Procura na subárvore direita
         atual->direita = remove_aux(atual->direita, nome, autor);
     } else if (cmp_autor == 0) {
-        // Livro encontrado
         if (atual->livro->qtd > 1) {
-            // Decrementa a quantidade se for maior que 1
             atual->livro->qtd--;
-            printf("Quantidade do livro '%s' diminuída para %d.\n", atual->livro->nome, atual->livro->qtd);
             return atual;
         }
 
         // Caso sem filhos
         if (!atual->esquerda && !atual->direita) {
-            free(atual->livro->nome);
-            free(atual->livro->nome_norma);
-            free(atual->livro->autor);
-            free(atual->livro->autor_norma);
-            free(atual->livro->genero);
-            free(atual->livro->genero_norma);
-            free(atual->livro);
+            free_livro(atual->livro);
             free(atual);
             return NULL;
         }
 
         // Caso com um filho
-        if (!atual->esquerda) {
-            No *temp = atual->direita;
-            free(atual->livro->nome);
-            free(atual->livro->nome_norma);
-            free(atual->livro->autor);
-            free(atual->livro->autor_norma);
-            free(atual->livro->genero);
-            free(atual->livro->genero_norma);
-            free(atual->livro);
+        if (!atual->esquerda || !atual->direita) {
+            No *temp = atual->esquerda ? atual->esquerda : atual->direita;
+            free_livro(atual->livro);
             free(atual);
             return temp;
         }
 
-        if (!atual->direita) {
-            No *temp = atual->esquerda;
-            free(atual->livro->nome);
-            free(atual->livro->nome_norma);
-            free(atual->livro->autor);
-            free(atual->livro->autor_norma);
-            free(atual->livro->genero);
-            free(atual->livro->genero_norma);
-            free(atual->livro);
-            free(atual);
-            return temp;
-        }
-
-        // Caso com dois filhos: encontrar o sucessor
+        // Caso com dois filhos
         No *sucessor = atual->direita;
-        while (sucessor && sucessor->esquerda) {
+        No *sucessor_pai = atual;
+
+        while (sucessor->esquerda) {
+            sucessor_pai = sucessor;
             sucessor = sucessor->esquerda;
         }
 
         // Substituir os dados do nó atual pelos do sucessor
-        free(atual->livro->nome);
-        free(atual->livro->nome_norma);
+        Livro *livro_temp = sucessor->livro;
+        sucessor->livro = NULL; // Remover a referência ao livro no sucessor
+        free_livro(atual->livro);
+        atual->livro = livro_temp;
 
-        atual->livro = sucessor -> livro;
+        // Ajustar os ponteiros para desconectar o sucessor
+        if (sucessor_pai != atual) {
+            sucessor_pai->esquerda = sucessor->direita;
+        } else {
+            sucessor_pai->direita = sucessor->direita;
+        }
 
-        // Remove o sucessor recursivamente e retorna o nó atualizado
-        atual -> direita = remove_aux(atual -> direita , sucessor -> livro -> nome_norma , sucessor -> livro -> autor_norma);
-
+        free(sucessor);
     }
 
-    return atual; // Retorna o nó atualizado
+    return atual;
 }
 
-
-Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, const char *autor) {
-    if (!c || !c->raiz || !nome_errado || !novo_nome || !autor) {
-        printf("Erro: Catálogo vazio ou dados inválidos.\n");
-        return NULL;
+// Função para renomear um livro no catálogo
+void editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, const char *autor, const char *genero) {
+    if (!c || !c->raiz) {
+        fprintf(stderr, "Erro: O catálogo está vazio ou inválido.\n");
+        return;
     }
 
-    // Normaliza o nome e o autor para comparação
+    // Normaliza os nomes para comparação
     char *nome_errado_norma = strdup(normalize_string(nome_errado));
+    char *novo_nome_norma = strdup(normalize_string(novo_nome));
     char *autor_norma = strdup(normalize_string(autor));
 
-    // Localiza e renomeia o livro usando a função auxiliar
-    No *editado = NULL;
-    c->raiz = edita_aux(c->raiz, nome_errado_norma, autor_norma, novo_nome, &editado);
+    // Busca e remove o livro com o nome errado
+    No *atual = c->raiz;
+    while (atual) {
+        int cmp_nome = strcmp(nome_errado_norma, atual->livro->nome_norma);
+        int cmp_autor = strcmp(autor_norma, atual->livro->autor_norma);
 
+        if (cmp_nome == 0 && cmp_autor == 0) {
+            break;
+        }
+        if (cmp_nome < 0) {
+            atual = atual->esquerda;
+        } else {
+            atual = atual->direita;
+        }
+    }
+
+    if (!atual) {
+        fprintf(stderr, "Erro: Livro '%s' não encontrado no catálogo.\n", nome_errado);
+        free(nome_errado_norma);
+        free(novo_nome_norma);
+        free(autor_norma);
+        return;
+    }
+
+    // Armazena a quantidade do livro encontrado
+    int quantidade_antiga = atual->livro->qtd;
+
+    // Remove o nó do livro antigo
+    c->raiz = remove_aux(c->raiz, nome_errado_norma, autor_norma);
+
+    // Cria um novo livro com o nome atualizado e a mesma quantidade
+    Livro *livro_atualizado = livro_init(novo_nome, genero, autor);
+    livro_atualizado->qtd = quantidade_antiga;
+
+    // Insere novamente o livro atualizado na árvore
+    add_livro(c, livro_atualizado);
+
+    printf("Livro '%s' renomeado para '%s' com sucesso!\n", nome_errado, novo_nome);
+
+    // Libera as strings normalizadas
     free(nome_errado_norma);
+    free(novo_nome_norma);
     free(autor_norma);
-
-    if (!editado) {
-        printf("Erro: Livro '%s' do autor '%s' não encontrado no catálogo.\n", nome_errado, autor);
-        return NULL;
-    }
-
-    // Cria uma cópia independente dos dados do livro editado
-    Livro *livro_temp = malloc(sizeof(Livro));
-    if (!livro_temp) {
-        perror("Erro ao alocar memória para o livro temporário");
-        exit(EXIT_FAILURE);
-    }
-
-    int qtd = editado->livro->qtd;
-    editado->livro->qtd = 1; // Temporariamente define a quantidade como 1
-
-    livro_temp->nome = strdup(editado->livro->nome);
-    livro_temp->nome_norma = strdup(editado->livro->nome_norma);
-    livro_temp->autor = strdup(editado->livro->autor);
-    livro_temp->autor_norma = strdup(editado->livro->autor_norma);
-    livro_temp->genero = strdup(editado->livro->genero);
-    livro_temp->genero_norma = strdup(editado->livro->genero_norma);
-    livro_temp->qtd = qtd;
-    livro_temp->status = editado->livro->status;
-
-    // Remove o nó original da árvore
-    c->raiz = remove_aux(c->raiz, editado->livro->nome_norma, editado->livro->autor_norma);
-
-    // Reinsere a cópia atualizada na posição correta
-    c->raiz = add_aux(c->raiz, livro_temp);
-
-    return livro_temp;
 }
-
 
 // Função principal para remover um livro do catálogo
 void remover_livro(Catalogo *c, const char *nome, const char *autor) {
@@ -533,35 +514,12 @@ int buscar_por_nome(Catalogo *c, const char *nome) {
     return encontrados;
 }
 
-// Libera todos os nós da árvore recursivamente
-void free_livros(No *atual) {
-    if (!atual) return;
-
-    // Libera os nós da subárvore esquerda e direita
-    free_livros(atual->esquerda);
-    free_livros(atual->direita);
-
-    // Libera os campos do livro
-    if (atual->livro) {
-        free(atual->livro->nome);
-        free(atual->livro->nome_norma);
-        free(atual->livro->autor);
-        free(atual->livro->autor_norma);
-        free(atual->livro->genero);
-        free(atual->livro->genero_norma);
-        free(atual->livro);
-    }
-
-    // Libera o nó atual
-    free(atual);
-}
-
 // Libera toda a memória associada ao catálogo e seus livros
 void free_catalogo(Catalogo *c) {
     if (!c) return;
 
     // Libera todos os nós da árvore binária
-    free_livros(c->raiz);
+    free_no(c->raiz);
 
     // Libera a estrutura do catálogo
     free(c);
