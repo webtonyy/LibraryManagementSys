@@ -67,23 +67,25 @@ void contar_livros(No *no, const char *nome, int *count) {
         contar_livros(no->direita, nome, count);
     }
 
-// Função para ler uma string de tamanho variável
-char* ler_string_dinamica() {
-    size_t tamanho = 0;
-    char *linha = NULL;
 
-    // Lê a entrada do usuário até encontrar '\n'
-    ssize_t bytes_lidos = getline(&linha, &tamanho, stdin);
-    if (bytes_lidos == -1) {
-        perror("Erro ao ler string");
-        free(linha);
-        return NULL;
-    }
+void percorrer_arvore_e_inserir_na_hash_autor(No *no, HashTable *ht) {
+    if (no == NULL) return;
 
-    // Remove o caractere '\n' do final da string, se existir
-    if (linha[bytes_lidos - 1] == '\n') {
-        linha[bytes_lidos - 1] = '\0';
-    }
+    // Insere o livro do nó atual na tabela hash
+    inserir_livro(ht, no->livro, no->livro->autor);
 
-    return linha; // Retorna a string alocada dinamicamente
+    // Percorre a subárvore esquerda e direita recursivamente
+    percorrer_arvore_e_inserir_na_hash_autor(no->esquerda, ht);
+    percorrer_arvore_e_inserir_na_hash_autor(no->direita, ht);
+}
+
+void percorrer_arvore_e_inserir_na_hash_genero(No *no, HashTable *ht) {
+    if (no == NULL) return;
+
+    // Insere o livro do nó atual na tabela hash
+    inserir_livro(ht, no->livro, no->livro->genero);
+
+    // Percorre a subárvore esquerda e direita recursivamente
+    percorrer_arvore_e_inserir_na_hash_genero(no->esquerda, ht);
+    percorrer_arvore_e_inserir_na_hash_genero(no->direita, ht);
 }

@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_OPEN_H
 #define HASH_TABLE_OPEN_H
 
-#define TABLE_SIZE 100
+#define TABLE_SIZE 50
 
 #include "../include/catalogo.h"
 
@@ -27,9 +27,7 @@ int inserir_livro(HashTable *t, Livro *l, const char *nome_no); // Insere um liv
 void deletar(HashTable *t, const char *nome, const char *nome_no); // Deleta um livro da tabela hash
 void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto, const char *nome_no); // Edita os dados de um livro existente
 void imprimir_tabela_hash(HashTable *hashTable);
+void decrementa_qtd(HashTable *ht, Livro *l, char *nome_no);
 void buscar_por_no(HashTable *t, const char *nome_no);        // Busca todos os livros associados a um nó específico
 void hash_free(HashTable *t);                                 // Libera toda a memória associada à tabela hash
-void salvar_hash(HashTable *t, const char *nome_arquivo);     // Salva a hash em um arquivo binário externo
-HashTable* carregar_hash(const char *nome_arquivo);           // Carrega uma hash de um arquivo binário externo
-
 #endif

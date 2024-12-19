@@ -4,6 +4,7 @@
 #include <locale.h>
 #include "../include/catalogo.h"
 #include "../include/hash.h"
+#include "../include/aux.h"
 
 
 // Definindo função para lidar com o sleep() em diferentes SOs:
@@ -70,8 +71,8 @@ int main() {
     printf("\nCarregando as configurações iniciais. Por favor, aguarde!\n");
     dormir(2);
     Catalogo *catalogo = carregar_catalogo("./savedata/data_c.bin"); 
-    HashTable *generoh = carregar_hash("./savedata/data_g.bin");
-    HashTable *autorh = carregar_hash("./savedata/data_a.bin");
+    HashTable *autorh = hash_table_init(50);
+    HashTable *generoh = hash_table_init(50);
     printf("Configurações inicializadas com sucesso!\n");
 
     printf("\nCarregando o menu de opções...\n");
@@ -79,6 +80,8 @@ int main() {
 
     char buffer[10];
     int opcao;
+    percorrer_arvore_e_inserir_na_hash_autor(catalogo->raiz,autorh);
+    percorrer_arvore_e_inserir_na_hash_genero(catalogo->raiz,generoh);
 
     do {
         exibir_menu();
@@ -268,8 +271,8 @@ int main() {
 
                     dormir(1);
                     if (resultado == 1) {
-                        deletar(autorh, nome, autor);
-                        deletar(generoh, nome, genero);
+                        decrementa_qtd(autorh,novo_livro,autor);
+                        decrementa_qtd(generoh,novo_livro,genero);
                     } else if (resultado == 0) {
                         printf("Livro indisponível para aluguel.\n");
                     } else {
@@ -297,13 +300,16 @@ int main() {
                     genero[strcspn(genero, "\n")] = '\0';
 
                     Livro *novo_livro = livro_init(nome,genero,autor);
-
                     int resultado = devolve_livro(catalogo, novo_livro);
 
                     dormir(1);
                     if (resultado == 1) {
+                        inserir_livro(autorh,novo_livro,autor);
+                        inserir_livro(generoh,novo_livro,genero);
                         printf("Livro devolvido com sucesso!\n");
                     } else if (resultado == 2) {
+                        inserir_livro(autorh,novo_livro,autor);
+                        inserir_livro(generoh,novo_livro,genero);
                         printf("Livro adicionado como uma nova doação!\n");
                     } else {
                         printf("Erro ao tentar devolver o livro.\n");
@@ -339,8 +345,7 @@ int main() {
 
                     int stt;
 
-                    if(excluir_arquivo("./savedata/data_c.bin")  && excluir_arquivo("./savedata/data_g.bin") 
-                    && excluir_arquivo("./savedata/data_a.bin")) stt = 1;
+                    if(excluir_arquivo("./savedata/data_c.bin")) stt = 1;
                     else stt = 0;
 
                     if(stt == 1)
@@ -363,8 +368,6 @@ int main() {
                     dormir(1);
 
                     salvar_catalogo(catalogo,"./savedata/data_c.bin");
-                    salvar_hash(generoh, "./savedata/data_g.bin");
-                    salvar_hash(autorh, "./savedata/data_a.bin");
                     printf("Arquivos salvos com sucesso!\n");
 
                     // Limpando as structs temporárias:

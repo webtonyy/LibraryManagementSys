@@ -328,13 +328,10 @@ void remover_livro(Catalogo *c, const char *nome, const char *autor) {
     // Remove o livro usando a função auxiliar
     No *nova_raiz = remove_aux(c->raiz, nome_norma, autor_norma);
 
-    if (nova_raiz != c->raiz) {
-        c->raiz = nova_raiz;
-        c->nl--; // Decrementa o número de livros no catálogo
-        printf("Livro '%s' removido com sucesso!\n", nome);
-    } else {
-        printf("Erro: Livro '%s' do autor '%s' não encontrado no catálogo.\n", nome, autor);
-    }
+    c->raiz = nova_raiz;
+    c->nl--; // Decrementa o número de livros no catálogo
+    printf("Livro '%s' removido com sucesso!\n", nome);
+    
 
     // Libera a memória das strings normalizadas
     free(nome_norma);
@@ -398,9 +395,8 @@ void verificar_status(Catalogo *c, const char *nome, const char *autor) {
     free(autor_normalizado);
 }
 
-// Função auxiliar para devolver um livro na árvore binária
 int devolve_livro_aux(No *atual, Livro *l) {
-    if (!atual || !l->nome_norma) return 2;
+    if (!atual || !l->nome_norma) return 2; // Retorna 2 se o livro não for encontrado
 
     // Compara o título e o autor do livro usando os campos normalizados
     int cmp_nome = strcmp(l->nome_norma, atual->livro->nome_norma);
@@ -408,28 +404,25 @@ int devolve_livro_aux(No *atual, Livro *l) {
 
     if (cmp_nome < 0) {
         // Procura na subárvore esquerda
-        atual->esquerda = add_aux(atual->esquerda, l);
+        return devolve_livro_aux(atual->esquerda, l);
     } else if (cmp_nome > 0) {
         // Procura na subárvore direita
-        atual->direita = add_aux(atual->direita, l);
+        return devolve_livro_aux(atual->direita, l);
     } else if (cmp_nome == 0) {
         if (cmp_autor == 0) {
             // Livro encontrado: incrementa a quantidade e atualiza o status
             atual->livro->qtd++;
             atual->livro->status = false; // Atualiza o status para disponível
             printf("Obrigado pela devolução do livro '%s'!\n", l->nome);
-            return 1;
-        } else {
-            // Continua na subárvore direita se os autores forem diferentes
-            atual->direita = add_aux(atual->direita, l);
+            return 1; // Retorna 1 indicando que o livro foi devolvido
         }
     }
-    return 2; // Caso o livro não seja encontrado, será tratado como doado
+
+    return 2; // Retorna 2 se o livro não for encontrado
 }
 
 
-// Função principal para devolver um livro ao catálogo
-int devolve_livro(Catalogo *c,  Livro *l) {
+int devolve_livro(Catalogo *c, Livro *l) {
     if (!c || !l) {
         printf("Erro: Parâmetros inválidos para devolução.\n");
         return -1; // Retorna -1 em caso de erro
@@ -440,11 +433,13 @@ int devolve_livro(Catalogo *c,  Livro *l) {
 
     if (resultado == 2) {
         // Adiciona o livro ao catálogo se ele não existir
-        add_livro(c, l);
+        add_livro(c, l); // Adiciona com quantidade inicial correta (1)
         printf("Obrigado pela devolução ou doação do livro '%s'!\n", l->nome);
-    } 
+    }
+
     return resultado;
 }
+
 
 
 // Função auxiliar para alugar um livro na árvore binária
