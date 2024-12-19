@@ -14,8 +14,11 @@
 // Estrutura para armazenar informações sobre o livro
 typedef struct Livro {
     char *nome;           // Título do livro (alocado dinamicamente)
+    char *nome_norma;
     char *autor;            // Nome do autor (alocado dinamicamente)
+    char *autor_norma;
     char *genero;           // Gênero literário (alocado dinamicamente)
+    char *genero_norma;
     int qtd;                // Quantidade de exemplares
     bool status;           // Status: true se o livro está alugado, false caso contrário
 } Livro;

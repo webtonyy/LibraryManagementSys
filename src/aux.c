@@ -66,3 +66,24 @@ void contar_livros(No *no, const char *nome, int *count) {
         if (strcmp(no->livro->nome, nome) == 0) (*count)++;
         contar_livros(no->direita, nome, count);
     }
+
+// Função para ler uma string de tamanho variável
+char* ler_string_dinamica() {
+    size_t tamanho = 0;
+    char *linha = NULL;
+
+    // Lê a entrada do usuário até encontrar '\n'
+    ssize_t bytes_lidos = getline(&linha, &tamanho, stdin);
+    if (bytes_lidos == -1) {
+        perror("Erro ao ler string");
+        free(linha);
+        return NULL;
+    }
+
+    // Remove o caractere '\n' do final da string, se existir
+    if (linha[bytes_lidos - 1] == '\n') {
+        linha[bytes_lidos - 1] = '\0';
+    }
+
+    return linha; // Retorna a string alocada dinamicamente
+}

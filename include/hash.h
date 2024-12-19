@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_OPEN_H
 #define HASH_TABLE_OPEN_H
 
-#define TABLE_SIZE 10
+#define TABLE_SIZE 100
 
 #include "../include/catalogo.h"
 

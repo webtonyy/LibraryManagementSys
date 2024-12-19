@@ -4,6 +4,7 @@
 #include <locale.h>
 #include "../include/catalogo.h"
 #include "../include/hash.h"
+#include "../include/aux.h"
 
 
 // Definindo função para lidar com o sleep() em diferentes SOs:
@@ -70,23 +71,17 @@ int main() {
 
             switch (opcao) {
                 case 1: { // Adicionar livro
-                    // Declaração de variáveis locais para armazenar os dados do livro
-                    char nome[100], autor_str[100], genero_str[50];
-
                     // Solicita o nome do livro
                     printf("Digite o nome do livro: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
+                    char *nome = ler_string_dinamica();
 
                     // Solicita o autor do livro
                     printf("Digite o autor do livro: ");
-                    fgets(autor_str, sizeof(autor_str), stdin);
-                    autor_str[strcspn(autor_str, "\n")] = '\0'; // Remove o caractere '\n'
+                    char *autor_str = ler_string_dinamica();
 
                     // Solicita o gênero do livro
                     printf("Digite o gênero do livro: ");
-                    fgets(genero_str, sizeof(genero_str), stdin);
-                    genero_str[strcspn(genero_str, "\n")] = '\0'; // Remove o caractere '\n'
+                    char *genero_str = ler_string_dinamica();
 
                     // Inicializa um novo livro (aloca memória dinamicamente para os campos)
                     Livro *novo_livro = livro_init(nome, genero_str, autor_str);
@@ -106,32 +101,43 @@ int main() {
                         printf("Erro ao criar o livro.\n");
                     }
 
+                    // Libera as strings alocadas dinamicamente
+                    free(nome);
+                    free(autor_str);
+                    free(genero_str);
+
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
 
                     break;
+                
                 }
 
 
                 case 2: { // Remover ou decrementar livro
-                    char nome[100],autor[100],genero[50];
+                    // Solicita o nome do livro a ser removido ou decrementado
                     printf("Digite o nome do livro a ser removido ou decrementado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    char *nome = ler_string_dinamica();
 
+                    // Solicita o autor do livro
                     printf("Digite o autor do livro a ser removido: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    char *autor = ler_string_dinamica();
 
+                    // Solicita o gênero do livro
                     printf("Digite o gênero do livro a ser removido: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+                    char *genero = ler_string_dinamica();
 
                     dormir(1);
 
+                    // Realiza as operações de remoção
                     remover_livro(catalogo, nome, autor);
-                    deletar(autorh,nome,autor);
-                    deletar(generoh,nome,genero);
+                    deletar(autorh, nome, autor);
+                    deletar(generoh, nome, genero);
+
+                    // Libera as strings alocadas dinamicamente
+                    free(nome);
+                    free(autor);
+                    free(genero);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
@@ -139,35 +145,39 @@ int main() {
                 }
 
                 case 3: { // Editar livro
-                    char nome[100], novo_nome[100], autor[100], genero[50];
+                    // Solicita o nome do livro a ser renomeado
                     printf("Digite o nome do livro a ser renomeado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    char *nome = ler_string_dinamica();
 
+                    // Solicita o autor do livro a ser editado
                     printf("Digite o autor do livro a ser editado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    char *autor = ler_string_dinamica();
 
+                    // Solicita o gênero do livro a ser editado
                     printf("Digite o gênero do livro a ser editado: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+                    char *genero = ler_string_dinamica();
 
+                    // Solicita o novo nome do livro
                     printf("Digite o novo nome do livro: ");
-                    fgets(novo_nome, sizeof(novo_nome), stdin);
-                    novo_nome[strcspn(novo_nome, "\n")] = '\0';
+                    char *novo_nome = ler_string_dinamica();
 
-
-
-                    Livro* editado =  editar_livro(catalogo, nome, novo_nome, autor);
-                    edita_livro(autorh,nome,novo_nome,autor);
-                    edita_livro(generoh,nome,novo_nome,genero);
+                    Livro* editado = editar_livro(catalogo, nome, novo_nome, autor);
+                    edita_livro(autorh, nome, novo_nome, autor);
+                    edita_livro(generoh, nome, novo_nome, genero);
 
                     dormir(1);
+                    
                     if (editado) {
                         printf("Livro editado com sucesso!\n");
                     } else {
                         printf("Erro ao editar o livro.\n");
                     }
+
+                    // Libera as strings alocadas dinamicamente
+                    free(nome);
+                    free(autor);
+                    free(genero);
+                    free(novo_nome);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
@@ -185,10 +195,9 @@ int main() {
                 }
 
                 case 5: { // Buscar livro por nome
-                    char nome[100];
+                    // Solicita o nome do livro a ser buscado
                     printf("Digite o nome do livro a ser buscado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    char *nome = ler_string_dinamica();
 
                     dormir(1);
                     int encontrados = buscar_por_nome(catalogo, nome);
@@ -196,19 +205,24 @@ int main() {
                         printf("Livro não encontrado.\n");
                     }
 
+                    // Libera a string alocada dinamicamente
+                    free(nome);
+
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
                     break;
                 }
 
                 case 6: { // Buscar por autor (usando tabela hash)
-                    char autor[100];
-                    printf("Digite o nome do autor a ser buscado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    // Solicita o autor do livro a ser buscado
+                    printf("Digite o autor que quer buscar: ");
+                    char *autor = ler_string_dinamica();
 
                     dormir(1);
                     buscar_por_no(autorh, autor); // Busca na tabela hash de autores
+
+                    // Libera a string alocada dinamicamente
+                    free(autor);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
@@ -216,13 +230,15 @@ int main() {
                 }
 
                 case 7: { // Buscar por gênero (usando tabela hash)
-                    char genero[50];
+                    // Solicita o gênero a ser buscado
                     printf("Digite o gênero a ser buscado: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+                    char *genero = ler_string_dinamica();
 
                     dormir(1);
                     buscar_por_no(generoh, genero); // Busca na tabela hash de gêneros
+
+                    // Libera a string alocada dinamicamente
+                    free(genero);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
@@ -230,26 +246,28 @@ int main() {
                 }
 
                 case 8: { // Alugar livro
-                    char nome[100], autor[100];
-                    printf("Digite o nome do livro a ser status: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    // Solicita o nome do livro a ser alugado
+                    printf("Digite o nome do livro a ser alugado: ");
+                    char *nome = ler_string_dinamica();
 
-                    printf("Digite o autor do livro a ser status: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    // Solicita o autor do livro
+                    printf("Digite o autor do livro a ser alugado: ");
+                    char *autor = ler_string_dinamica();
 
                     int resultado = emprestar_livro(catalogo, nome, autor);
 
                     dormir(1);
                     if (resultado == 1) {
-                        printf("Livro status com sucesso!\n");
+                        printf("Livro alugado com sucesso!\n");
                     } else if (resultado == 0) {
                         printf("Livro indisponível para aluguel.\n");
                     } else {
                         printf("Erro ao tentar alugar o livro.\n");
                     }
 
+                    // Libera as strings alocadas dinamicamente
+                    free(nome);
+                    free(autor);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
@@ -257,13 +275,14 @@ int main() {
                 }
 
                 case 9: { // Devolver livro
-                    char nome[100], autor[100];
+                    // Solicita o nome do livro a ser devolvido
                     printf("Digite o nome do livro a ser devolvido: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    char *nome = ler_string_dinamica();
+
+                    // Solicita o autor do livro a ser devolvido
                     printf("Digite o autor do livro a ser devolvido: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    char *autor = ler_string_dinamica();
+
                     int resultado = devolve_livro(catalogo, nome, autor);
 
                     dormir(1);
@@ -275,22 +294,30 @@ int main() {
                         printf("Erro ao tentar devolver o livro.\n");
                     }
 
+                    // Libera as strings alocadas dinamicamente
+                    free(nome);
+                    free(autor);
+
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
                     break;
                 }
 
-                case 10: { // Verificar status de um livro
-                    char nome[100], autor[100];
-                    printf("Digite o nome do livro a ser consultado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
 
+                case 10: { // Verificar status de um livro
+                    // Solicita o nome do livro a ser consultado
+                    printf("Digite o nome do livro a ser consultado: ");
+                    char *nome = ler_string_dinamica();
+
+                    // Solicita o autor do livro a ser consultado
                     printf("Digite o autor do livro a ser consultado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    char *autor = ler_string_dinamica();
 
                     verificar_status(catalogo, nome, autor);
+
+                    // Libera as strings alocadas dinamicamente
+                    free(nome);
+                    free(autor);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
