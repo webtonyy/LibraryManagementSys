@@ -93,7 +93,7 @@ int main() {
             switch (opcao) {
                 case 1: { // Adicionar livro
                     // Declaração de variáveis locais para armazenar os dados do livro
-                    char nome[100], autor_str[100], genero_str[50];
+                    char nome[100], autor[100], genero[50];
 
                     // Solicita o nome do livro
                     printf("Digite o nome do livro: ");
@@ -102,16 +102,21 @@ int main() {
 
                     // Solicita o autor do livro
                     printf("Digite o autor do livro: ");
-                    fgets(autor_str, sizeof(autor_str), stdin);
-                    autor_str[strcspn(autor_str, "\n")] = '\0'; // Remove o caractere '\n'
+                    fgets(autor, sizeof(autor), stdin);
+                    autor[strcspn(autor, "\n")] = '\0'; // Remove o caractere '\n'
 
                     // Solicita o gênero do livro
                     printf("Digite o gênero do livro: ");
-                    fgets(genero_str, sizeof(genero_str), stdin);
-                    genero_str[strcspn(genero_str, "\n")] = '\0'; // Remove o caractere '\n'
+                    fgets(genero, sizeof(genero), stdin);
+                    genero[strcspn(genero, "\n")] = '\0'; // Remove o caractere '\n'
+
+                    if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
 
                     // Inicializa um novo livro (aloca memória dinamicamente para os campos)
-                    Livro *novo_livro = livro_init(nome, genero_str, autor_str);
+                    Livro *novo_livro = livro_init(nome, genero, autor);
 
                     dormir(1);
 
@@ -120,8 +125,8 @@ int main() {
                         add_livro(catalogo, novo_livro);
 
                         // Insere o livro nas tabelas hash (gêneros e autores)
-                        inserir_livro(generoh, novo_livro, genero_str); // Usa apenas strings alocadas dinamicamente no hash
-                        inserir_livro(autorh, novo_livro, autor_str);
+                        inserir_livro(generoh, novo_livro, genero); // Usa apenas strings alocadas dinamicamente no hash
+                        inserir_livro(autorh, novo_livro, autor);
 
                         printf("Livro adicionado com sucesso!\n");
                     } else {
@@ -148,6 +153,12 @@ int main() {
                     printf("Digite o gênero do livro a ser removido: ");
                     fgets(genero, sizeof(genero), stdin);
                     genero[strcspn(genero, "\n")] = '\0';
+
+                    if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
+
 
                     dormir(1);
 
@@ -177,6 +188,11 @@ int main() {
                     printf("Digite o novo nome do livro: ");
                     fgets(novo_nome, sizeof(novo_nome), stdin);
                     novo_nome[strcspn(novo_nome, "\n")] = '\0';
+
+                    if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1 || is_valid_string(novo_nome) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
 
 
 
@@ -212,6 +228,11 @@ int main() {
                     fgets(nome, sizeof(nome), stdin);
                     nome[strcspn(nome, "\n")] = '\0';
 
+                    if(is_valid_string(nome) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
+
                     dormir(1);
                     int encontrados = buscar_por_nome(catalogo, nome);
                     if (encontrados == 0) {
@@ -229,6 +250,11 @@ int main() {
                     fgets(autor, sizeof(autor), stdin);
                     autor[strcspn(autor, "\n")] = '\0';
 
+                    if(is_valid_string(autor) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
+
                     dormir(1);
                     buscar_por_no(autorh, autor); // Busca na tabela hash de autores
 
@@ -239,9 +265,15 @@ int main() {
 
                 case 7: { // Buscar por gênero (usando tabela hash)
                     char genero[50];
+
                     printf("Digite o gênero a ser buscado: ");
                     fgets(genero, sizeof(genero), stdin);
                     genero[strcspn(genero, "\n")] = '\0';
+
+                    if(is_valid_string(genero) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
 
                     dormir(1);
                     buscar_por_no(generoh, genero); // Busca na tabela hash de gêneros
@@ -264,6 +296,11 @@ int main() {
                     printf("Digite o gênero do livro a ser alugado: ");
                     fgets(genero, sizeof(genero), stdin);
                     genero[strcspn(genero, "\n")] = '\0';
+
+                    if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
 
                     Livro *novo_livro = livro_init(nome,genero,autor);
 
@@ -299,6 +336,11 @@ int main() {
                     fgets(genero, sizeof(genero), stdin);
                     genero[strcspn(genero, "\n")] = '\0';
 
+                    if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
+                    
                     Livro *novo_livro = livro_init(nome,genero,autor);
                     int resultado = devolve_livro(catalogo, novo_livro);
 
@@ -329,6 +371,11 @@ int main() {
                     printf("Digite o autor do livro a ser consultado: ");
                     fgets(autor, sizeof(autor), stdin);
                     autor[strcspn(autor, "\n")] = '\0';
+
+                    if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1){
+                        printf("Caracteres inválidos.");
+                        break;
+                    }
 
                     verificar_status(catalogo, nome, autor);
 

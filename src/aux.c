@@ -45,13 +45,17 @@ char* to_lowercase(const char* str) {
 }
 
 int is_valid_string(const char *str) {
+    if (!str || str[0] == '\0') {
+        return 0; // String é nula ou vazia
+    }
+
     for (int i = 0; str[i] != '\0'; i++) {
         char c = str[i];
         if (!isascii(c) && c != ' ' && strchr("áàãâéêíóõôúçÁÀÃÂÉÊÍÓÕÔÚÇ", c) == NULL) {
             return 0; // Caractere inválido encontrado
         }
     }
-    return 1; // Todos os caracteres são válidos
+    return 1; // Todos os caracteres são válidos e a string não está vazia
 }
 
 char* normalize_string(const char* str) {

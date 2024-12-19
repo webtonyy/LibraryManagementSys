@@ -8,10 +8,6 @@
 
 // Inicializa um livro
 Livro* livro_init(const char *nome, const char *genero, const char *autor) {
-    if (!is_valid_string(nome) || !is_valid_string(genero) || !is_valid_string(autor)) {
-        printf("Erro: Nome, gênero e/ou autor inválido.\n");
-        return NULL;
-    }
 
     Livro *l = malloc(sizeof(Livro));
     if (!l) {
