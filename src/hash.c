@@ -454,6 +454,8 @@ void hash_free(HashTable *t) {
     t->tabela = NULL;
     t->tamanho = 0;
 
+    free(t);
+
     printf("Memória liberada com sucesso.\n");
 }
 

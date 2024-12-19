@@ -388,6 +388,7 @@ int main() {
                     free(genero);
                     free(autor);
 
+                    free_livro(novo_livro);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
