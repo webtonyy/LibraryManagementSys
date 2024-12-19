@@ -122,7 +122,7 @@ No* add_aux(No *atual, Livro *livro) {
     } else if (cmp_nome > 0 || cmp_autor != 0) {
         atual->direita = add_aux(atual->direita, livro);
     } else {
-        atual->livro->qtd+=livro->qtd;
+        atual->livro->qtd += livro->qtd;
     }
 
     return atual;

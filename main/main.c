@@ -71,8 +71,8 @@ int main() {
     printf("\nCarregando as configurações iniciais. Por favor, aguarde!\n");
     dormir(2);
     Catalogo *catalogo = carregar_catalogo("./savedata/data_c.bin"); 
-    HashTable *autorh = hash_table_init(50);
-    HashTable *generoh = hash_table_init(50);
+    HashTable *autorh = hash_table_init(101);
+    HashTable *generoh = hash_table_init(101);
     printf("Configurações inicializadas com sucesso!\n");
 
     printf("\nCarregando o menu de opções...\n");
@@ -93,25 +93,31 @@ int main() {
             switch (opcao) {
                 case 1: { // Adicionar livro
                     // Declaração de variáveis locais para armazenar os dados do livro
-                    char nome[100], autor[100], genero[50];
+                    char *nome = NULL, *autor=NULL, *genero = NULL;
+                    size_t len = 0;
 
                     // Solicita o nome do livro
-                    printf("Digite o nome do livro: ");
-                    fgets(nome, sizeof(nome), stdin);
+                    printf("Digite o nome do livro a ser adicionado: ");
+                    getline(&nome, &len, stdin);
                     nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
 
                     // Solicita o autor do livro
                     printf("Digite o autor do livro: ");
-                    fgets(autor, sizeof(autor), stdin);
+                    len = 0;
+                    getline(&autor, &len, stdin);
                     autor[strcspn(autor, "\n")] = '\0'; // Remove o caractere '\n'
 
                     // Solicita o gênero do livro
                     printf("Digite o gênero do livro: ");
-                    fgets(genero, sizeof(genero), stdin);
+                    len = 0;
+                    getline(&genero, &len, stdin);
                     genero[strcspn(genero, "\n")] = '\0'; // Remove o caractere '\n'
 
                     if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1){
                         printf("Caracteres inválidos.");
+                        free(nome);
+                        free(genero);
+                        free(autor);
                         break;
                     }
 
@@ -133,6 +139,9 @@ int main() {
                         printf("Erro ao criar o livro.\n");
                     }
 
+                    free(nome);
+                    free(genero);
+                    free(autor);
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
 
@@ -141,21 +150,31 @@ int main() {
 
 
                 case 2: { // Remover ou decrementar livro
-                    char nome[100],autor[100],genero[50];
-                    printf("Digite o nome do livro a ser removido ou decrementado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    char *nome = NULL, *autor=NULL, *genero = NULL;
+                    size_t len = 0;
 
-                    printf("Digite o autor do livro a ser removido: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    // Solicita o nome do livro
+                    printf("Digite o nome do livro a ser removido: ");
+                    getline(&nome, &len, stdin);
+                    nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
 
-                    printf("Digite o gênero do livro a ser removido: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+                    // Solicita o autor do livro
+                    printf("Digite o autor do livro: ");
+                    len = 0;
+                    getline(&autor, &len, stdin);
+                    autor[strcspn(autor, "\n")] = '\0'; // Remove o caractere '\n'
+
+                    // Solicita o gênero do livro
+                    printf("Digite o gênero do livro: ");
+                    len = 0;
+                    getline(&genero, &len, stdin);
+                    genero[strcspn(genero, "\n")] = '\0'; // Remove o caractere '\n'
 
                     if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1){
                         printf("Caracteres inválidos.");
+                        free(nome);
+                        free(genero);
+                        free(autor);
                         break;
                     }
 
@@ -166,41 +185,60 @@ int main() {
                     deletar(autorh,nome,autor);
                     deletar(generoh,nome,genero);
 
+                    free(autor);
+                    free(nome);
+                    free(genero);
+
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
                     break;
                 }
 
                 case 3: { // Editar livro
-                    char nome[100], novo_nome[100], autor[100], genero[50];
-                    printf("Digite o nome do livro a ser renomeado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    char *nome = NULL, *autor=NULL, *genero = NULL, *novo_nome = NULL;
+                    size_t len = 0;
 
-                    printf("Digite o autor do livro a ser editado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    // Solicita o nome do livro
+                    printf("Digite o nome do livro a ser editado: ");
+                    getline(&nome, &len, stdin);
+                    nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
 
-                    printf("Digite o gênero do livro a ser editado: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+                    // Solicita o autor do livro
+                    printf("Digite o autor do livro: ");
+                    len = 0;
+                    getline(&autor, &len, stdin);
+                    autor[strcspn(autor, "\n")] = '\0'; // Remove o caractere '\n'
 
+                    // Solicita o gênero do livro
+                    printf("Digite o gênero do livro: ");
+                    len = 0;
+                    getline(&genero, &len, stdin);
+                    genero[strcspn(genero, "\n")] = '\0'; // Remove o caractere '\n'
+
+                    // Solicita o nome do livro
                     printf("Digite o novo nome do livro: ");
-                    fgets(novo_nome, sizeof(novo_nome), stdin);
-                    novo_nome[strcspn(novo_nome, "\n")] = '\0';
+                    len=0;
+                    getline(&novo_nome, &len, stdin);
+                    novo_nome[strcspn(novo_nome, "\n")] = '\0'; // Remove o caractere '\n'
 
-                    if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1 || is_valid_string(novo_nome) !=1){
+                    if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1 || is_valid_string(nome) !=1){
                         printf("Caracteres inválidos.");
+                        free(nome);
+                        free(genero);
+                        free(autor);
+                        free(novo_nome);
                         break;
                     }
-
-
 
                     editar_livro(catalogo, nome, novo_nome, autor,genero);
                     edita_livro(autorh,nome,novo_nome,autor);
                     edita_livro(generoh,nome,novo_nome,genero);
                     dormir(1);
 
+                    free(nome);
+                    free(genero);
+                    free(autor);
+                    free(novo_nome);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
@@ -218,13 +256,17 @@ int main() {
                 }
 
                 case 5: { // Buscar livro por nome
-                    char nome[100];
+                    char *nome = NULL;
+                    size_t len = 0;
+
+                    // Solicita o nome do livro
                     printf("Digite o nome do livro a ser buscado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    getline(&nome, &len, stdin);
+                    nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
 
                     if(is_valid_string(nome) !=1){
                         printf("Caracteres inválidos.");
+                        free(nome);
                         break;
                     }
 
@@ -234,16 +276,27 @@ int main() {
                         printf("Livro não encontrado.\n");
                     }
 
+                    free(nome);
+
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
                     break;
                 }
 
                 case 6: { // Buscar por autor (usando tabela hash)
-                    char autor[100];
-                    printf("Digite o nome do autor a ser buscado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    char *autor = NULL;
+                    size_t len = 0;
+
+                    // Solicita o nome do livro
+                    printf("Digite o autor do livro a ser buscado: ");
+                    getline(&autor, &len, stdin);
+                    autor[strcspn(autor, "\n")] = '\0'; // Remove o caractere '\n'
+
+                    if(is_valid_string(autor) !=1){
+                        printf("Caracteres inválidos.");
+                        free(autor);
+                        break;
+                    }
 
                     if(is_valid_string(autor) !=1){
                         printf("Caracteres inválidos.");
@@ -253,25 +306,34 @@ int main() {
                     dormir(1);
                     buscar_por_no(autorh, autor); // Busca na tabela hash de autores
 
+                    free(autor);
+
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
                     break;
                 }
 
                 case 7: { // Buscar por gênero (usando tabela hash)
-                    char genero[50];
+                    char *genero = NULL;
+                    size_t len = 0;
 
-                    printf("Digite o gênero a ser buscado: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+                    // Solicita o nome do livro
+                    printf("Digite o gênero do livro a ser buscado: ");
+                    getline(&genero, &len, stdin);
+                    genero[strcspn(genero, "\n")] = '\0'; // Remove o caractere '\n'
 
                     if(is_valid_string(genero) !=1){
                         printf("Caracteres inválidos.");
+                        free(genero);
                         break;
                     }
 
+
+
                     dormir(1);
                     buscar_por_no(generoh, genero); // Busca na tabela hash de gêneros
+
+                    free(genero);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
@@ -279,21 +341,32 @@ int main() {
                 }
 
                 case 8: { // Alugar livro
-                    char nome[100], autor[100], genero[50];
+                    // Declaração de variáveis locais para armazenar os dados do livro
+                    char *nome = NULL, *autor=NULL, *genero = NULL;
+                    size_t len = 0;
+
+                    // Solicita o nome do livro
                     printf("Digite o nome do livro a ser alugado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    getline(&nome, &len, stdin);
+                    nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
 
-                    printf("Digite o autor do livro a ser alugado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    // Solicita o autor do livro
+                    printf("Digite o autor do livro: ");
+                    len = 0;
+                    getline(&autor, &len, stdin);
+                    autor[strcspn(autor, "\n")] = '\0'; // Remove o caractere '\n'
 
-                    printf("Digite o gênero do livro a ser alugado: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+                    // Solicita o gênero do livro
+                    printf("Digite o gênero do livro: ");
+                    len = 0;
+                    getline(&genero, &len, stdin);
+                    genero[strcspn(genero, "\n")] = '\0'; // Remove o caractere '\n'
 
                     if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1){
                         printf("Caracteres inválidos.");
+                        free(nome);
+                        free(genero);
+                        free(autor);
                         break;
                     }
 
@@ -311,6 +384,10 @@ int main() {
                         printf("Erro ao tentar alugar o livro.\n");
                     }
 
+                    free(nome);
+                    free(genero);
+                    free(autor);
+
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
@@ -318,21 +395,32 @@ int main() {
                 }
 
                 case 9: { // Devolver livro
-                    char nome[100], autor[100], genero[50];
-                    printf("Digite o nome do livro a ser entregue: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    // Declaração de variáveis locais para armazenar os dados do livro
+                    char *nome = NULL, *autor=NULL, *genero = NULL;
+                    size_t len = 0;
 
-                    printf("Digite o autor do livro a ser entregue: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    // Solicita o nome do livro
+                    printf("Digite o nome do livro a ser devolvido: ");
+                    getline(&nome, &len, stdin);
+                    nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
 
-                    printf("Digite o gênero do livro a ser entregue: ");
-                    fgets(genero, sizeof(genero), stdin);
-                    genero[strcspn(genero, "\n")] = '\0';
+                    // Solicita o autor do livro
+                    printf("Digite o autor do livro: ");
+                    len = 0;
+                    getline(&autor, &len, stdin);
+                    autor[strcspn(autor, "\n")] = '\0'; // Remove o caractere '\n'
+
+                    // Solicita o gênero do livro
+                    printf("Digite o gênero do livro: ");
+                    len = 0;
+                    getline(&genero, &len, stdin);
+                    genero[strcspn(genero, "\n")] = '\0'; // Remove o caractere '\n'
 
                     if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1 || is_valid_string(genero) !=1){
                         printf("Caracteres inválidos.");
+                        free(nome);
+                        free(genero);
+                        free(autor);
                         break;
                     }
                     
@@ -352,27 +440,43 @@ int main() {
                         printf("Erro ao tentar devolver o livro.\n");
                     }
 
+                    free(nome);
+                    free(genero);
+                    free(autor);
+
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
                     break;
                 }
 
                 case 10: { // Verificar status de um livro
-                    char nome[100], autor[100];
-                    printf("Digite o nome do livro a ser consultado: ");
-                    fgets(nome, sizeof(nome), stdin);
-                    nome[strcspn(nome, "\n")] = '\0';
+                    // Declaração de variáveis locais para armazenar os dados do livro
+                    char *nome = NULL, *autor=NULL;
+                    size_t len = 0;
 
-                    printf("Digite o autor do livro a ser consultado: ");
-                    fgets(autor, sizeof(autor), stdin);
-                    autor[strcspn(autor, "\n")] = '\0';
+                    // Solicita o nome do livro
+                    printf("Digite o nome do livro a ser consultado: ");
+                    getline(&nome, &len, stdin);
+                    nome[strcspn(nome, "\n")] = '\0'; // Remove o caractere '\n'
+
+                    // Solicita o autor do livro
+                    printf("Digite o autor do livro: ");
+                    len = 0;
+                    getline(&autor, &len, stdin);
+                    autor[strcspn(autor, "\n")] = '\0'; // Remove o caractere '\n'
+
 
                     if(is_valid_string(nome) !=1 || is_valid_string(autor) !=1){
                         printf("Caracteres inválidos.");
+                        free(nome);
+                        free(autor);
                         break;
                     }
 
                     verificar_status(catalogo, nome, autor);
+
+                    free(nome);
+                    free(autor);
 
                     printf("\nPressione [Enter] para retornar...\n");
                     getchar();
