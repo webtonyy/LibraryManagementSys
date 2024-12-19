@@ -6,26 +6,35 @@
 #include "../include/aux.h"
 
 
+
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 // Função para remover acentos
 char* remover_acentos(const char* str) {
-    static char buffer[256];
+    if (!str) return NULL;
+
+    char *buffer = malloc(strlen(str) + 1); // Aloca memória para a string normalizada
+    if (!buffer) return NULL; // Verifica se a alocação foi bem-sucedida
+
     int i, j = 0;
     for (i = 0; str[i] != '\0'; i++) {
         unsigned char c = (unsigned char)str[i];
-        if (strchr("áàãâÁÀÃÂ", c)) {
+        if (strchr("áàãâäÁÀÃÂÄ", c)) {
             buffer[j++] = 'a';
-        } else if (strchr("éêÉÊ", c)) {
+        } else if (strchr("éèêëÉÈÊË", c)) {
             buffer[j++] = 'e';
-        } else if (strchr("íÍ", c)) {
+        } else if (strchr("íìîïÍÌÎÏ", c)) {
             buffer[j++] = 'i';
-        } else if (strchr("óõôÓÕÔ", c)) {
+        } else if (strchr("óòõôöÓÒÕÔÖ", c)) {
             buffer[j++] = 'o';
-        } else if (strchr("úÚ", c)) {
+        } else if (strchr("úùûüÚÙÛÜ", c)) {
             buffer[j++] = 'u';
         } else if (strchr("çÇ", c)) {
             buffer[j++] = 'c';
         } else {
-            buffer[j++] = c;
+            buffer[j++] = c; // Copia o caractere sem alteração
         }
     }
     buffer[j] = '\0'; // Certifique-se de terminar a string
@@ -34,7 +43,11 @@ char* remover_acentos(const char* str) {
 
 // Função para converter para minúsculas
 char* to_lowercase(const char* str) {
-    static char buffer[256];
+    if (!str) return NULL;
+
+    char *buffer = malloc(strlen(str) + 1); // Aloca memória para a string resultante
+    if (!buffer) return NULL; // Verifica se a alocação foi bem-sucedida
+
     int i = 0;
     while (str[i]) {
         buffer[i] = tolower((unsigned char)str[i]);
@@ -44,6 +57,8 @@ char* to_lowercase(const char* str) {
     return buffer;
 }
 
+
+
 int is_valid_string(const char *str) {
     if (!str || str[0] == '\0') {
         return 0; // String é nula ou vazia
@@ -51,16 +66,28 @@ int is_valid_string(const char *str) {
 
     for (int i = 0; str[i] != '\0'; i++) {
         char c = str[i];
-        if (!isascii(c) && c != ' ' && strchr("áàãâéêíóõôúçÁÀÃÂÉÊÍÓÕÔÚÇ", c) == NULL) {
+        if (!isascii(c) && c != ' ' && strchr("áàãâéêíóõôúçÁÀÃÂÉÊÍÓÕÔÚÇñöÖäÑÄ", c) == NULL) {
             return 0; // Caractere inválido encontrado
         }
     }
     return 1; // Todos os caracteres são válidos e a string não está vazia
 }
 
+
+// Função para normalizar strings (remover acentos e converter para minúsculas)
 char* normalize_string(const char* str) {
-    return remover_acentos(to_lowercase(str));
+    if (!str) return NULL;
+
+    char *lowercase = to_lowercase(str);       // Converte para minúsculas
+    if (!lowercase) return NULL;              // Verifica se a conversão foi bem-sucedida
+
+    char *normalized = remover_acentos(lowercase); // Remove os acentos
+    free(lowercase);                             // Libera a memória intermediária
+
+    return normalized;                          // Retorna a string normalizada
 }
+
+
 
 
 // Função para contar quantos livros existem com o mesmo nome no catálogo

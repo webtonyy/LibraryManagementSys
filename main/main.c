@@ -65,7 +65,7 @@ void exibir_menu() {
 }
 
 int main() {
-    setlocale(LC_ALL, "Portuguese"); // Configura o locale para suportar caracteres acentuados
+    setlocale(LC_ALL, "pt_BR.iso88591"); // Configura o locale para suportar caracteres acentuados
 
     // Carregando das estruturas de um arquivo binário externo:
     printf("\nCarregando as configurações iniciais. Por favor, aguarde!\n");

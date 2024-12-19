@@ -526,9 +526,6 @@ int buscar_por_nome(Catalogo *c, const char *nome) {
     int encontrados = 0;
     buscar_aux(c->raiz, nome_normalizado, &encontrados);
 
-    if (encontrados == 0) {
-        printf("Nenhum livro com o título '%s' foi encontrado no catálogo.\n", nome);
-    }
 
     // Libera a memória do nome normalizado
     free(nome_normalizado);
