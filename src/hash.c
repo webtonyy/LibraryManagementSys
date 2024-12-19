@@ -17,7 +17,7 @@ int funcaohash_string(const char *nome) {
     if (!nome) return -1; // Retorna -1 em caso de nome inválido
 
     // Normaliza a string
-    char *normalized = normalize_string(nome);
+    char *normalized = strdup(normalize_string(nome));
     if (!normalized) return -1; // Retorna -1 se a normalização falhar
 
     int tam = strlen(normalized);
@@ -38,7 +38,7 @@ int inserir_livro(HashTable *t, Livro *l, const char *nome_no) {
     }
 
     // Normaliza o nome do nó (gênero ou autor)
-    char *no_normalizado = normalize_string(nome_no);
+    char *no_normalizado = strdup(normalize_string(nome_no));
     if (!no_normalizado) {
         fprintf(stderr, "Falha ao normalizar nome do nó: %s\n", nome_no);
         return 0;
@@ -137,7 +137,7 @@ void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto
     }
 
     // Normaliza o nome do nó (gênero ou autor)
-    char *no_normalizado = normalize_string(nome_no);
+    char *no_normalizado = strdup(normalize_string(nome_no));
     if (!no_normalizado) {
         fprintf(stderr, "Falha ao normalizar o nome do nó: %s\n", nome_no);
         return;
@@ -155,7 +155,7 @@ void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto
                 Livro *livro = atual->livros[i];
                 
                 // Normaliza o nome do livro errado para comparação
-                char *nome_errado_norma = normalize_string(nome_errado);
+                char *nome_errado_norma = strdup(normalize_string(nome_errado));
                 if (!nome_errado_norma) {
                     fprintf(stderr, "Falha ao normalizar o nome do livro: %s\n", nome_errado);
                     free(no_normalizado);
@@ -168,7 +168,7 @@ void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto
                     free(livro->nome_norma); // Libera a memória do nome normalizado antigo
 
                     livro->nome = strdup(nome_correto); // Aloca e copia o novo nome
-                    livro->nome_norma = normalize_string(nome_correto); // Atualiza o nome normalizado
+                    livro->nome_norma = strdup(normalize_string(nome_correto)); // Atualiza o nome normalizado
 
                     printf("Livro renomeado com sucesso! Novo título: '%s'\n", livro->nome);
 
@@ -198,7 +198,7 @@ void deletar(HashTable *t, const char *nome, const char *nome_no) {
     }
 
     // Normaliza o nome do nó
-    char *no_normalizado = normalize_string(nome_no);
+    char *no_normalizado = strdup(normalize_string(nome_no));
     if (!no_normalizado) {
         fprintf(stderr, "Falha ao normalizar o nome do nó: %s\n", nome_no);
         return;
@@ -218,7 +218,7 @@ void deletar(HashTable *t, const char *nome, const char *nome_no) {
                 Livro *livro = atual->livros[i];
 
                 // Normaliza o nome do livro para comparação
-                char *nome_normalizado = normalize_string(nome);
+                char *nome_normalizado = strdup(normalize_string(nome));
                 if (!nome_normalizado) {
                     fprintf(stderr, "Falha ao normalizar o nome do livro: %s\n", nome);
                     free(no_normalizado);
@@ -229,13 +229,11 @@ void deletar(HashTable *t, const char *nome, const char *nome_no) {
                     // Livro encontrado
                     if (livro->qtd > 1) { // Usando 'qtd' como exemplo de quantidade
                         livro->qtd--; // Diminui a quantidade
-                        printf("Quantidade do livro '%s' no nó '%s' diminuída.\n", nome, nome_no);
                         free(nome_normalizado); // Libera a memória da string normalizada
                         free(no_normalizado);   // Libera a memória da string normalizada do nó
                         return;
                     } else {
                         // Remove o livro completamente
-                        printf("Livro '%s' removido do nó '%s'.\n", nome, nome_no);
                         free(livro->nome);
                         free(livro->nome_norma);
                         free(livro->autor);
@@ -252,7 +250,6 @@ void deletar(HashTable *t, const char *nome, const char *nome_no) {
 
                         // Verifica se o nó ficou vazio e remove-o
                         if (atual->quantidade == 0) {
-                            printf("Nó '%s' está vazio e será removido.\n", atual->nome);
                             free(atual->livros);
                             free(atual->nome);
 
@@ -272,8 +269,6 @@ void deletar(HashTable *t, const char *nome, const char *nome_no) {
 
                 free(nome_normalizado); // Libera a memória da string normalizada
             }
-
-            printf("Livro '%s' não encontrado no nó '%s'.\n", nome, nome_no);
             free(no_normalizado); // Libera a memória da string normalizada do nó
             return;
         }
@@ -293,7 +288,7 @@ void buscar_por_no(HashTable *t, const char *nome_no) {
     }
 
     // Normaliza o nome do nó
-    char *no_normalizado = normalize_string(nome_no);
+    char *no_normalizado = strdup(normalize_string(nome_no));
     if (!no_normalizado) {
         fprintf(stderr, "Falha ao normalizar o nome do nó: %s\n", nome_no);
         return;

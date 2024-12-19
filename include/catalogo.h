@@ -43,8 +43,8 @@ Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome,
 Livro* add_livro(Catalogo *c, Livro *l);
 void remover_livro(Catalogo *c, const char *nome, const char *autor);
 void listar_livros(Catalogo *c);
-int devolve_livro(Catalogo *c, char *nome, char *autor); // Retorna 1 se devolvido, 2 se doado
-int emprestar_livro(Catalogo *c, char *nome, char *autor); // Retorna 1 se alugado, 0 se indisponível, -1 em caso de erro
+int devolve_livro(Catalogo *c, Livro *l); // Retorna 1 se devolvido, 2 se doado
+int emprestar_livro(Catalogo *c, Livro *l); // Retorna 1 se alugado, 0 se indisponível, -1 em caso de erro
 int buscar_por_nome(Catalogo *c, const char *nome); // Busca todos os livros com o mesmo título
 void verificar_status(Catalogo *c, const char *nome, const char *autor);
 void free_catalogo(Catalogo *c);

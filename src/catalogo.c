@@ -25,9 +25,9 @@ Livro* livro_init(const char *nome, const char *genero, const char *autor) {
     l->autor = strdup(autor);
 
     // Normaliza os valores e armazena nos campos correspondentes
-    l->nome_norma = normalize_string(nome);   // Normaliza o título
-    l->genero_norma = normalize_string(genero); // Normaliza o gênero
-    l->autor_norma = normalize_string(autor);  // Normaliza o autor
+    l->nome_norma = strdup(normalize_string(nome));   // Normaliza o título
+    l->genero_norma = strdup(normalize_string(genero)); // Normaliza o gênero
+    l->autor_norma = strdup(normalize_string(autor));  // Normaliza o autor
 
     // Inicializa os outros campos
     l->qtd = 1;                // Inicializa a quantidade como 1
@@ -80,7 +80,6 @@ Catalogo* catalogo_init() {
 // Função auxiliar para adicionar um nó à árvore binária
 No* add_aux(No *atual, Livro *livro) {
     if (!atual) {
-        printf("Criando um novo nó para o livro '%s'.\n", livro ? livro->nome : "NULL");
         No *novo_no = no_init(livro);
         return novo_no;
     }
@@ -97,13 +96,10 @@ No* add_aux(No *atual, Livro *livro) {
     int cmp_autor = strcmp(livro->autor_norma, atual->livro->autor_norma);
 
     if (cmp_nome < 0) {
-        printf("Adicionando '%s' à subárvore esquerda de '%s'.\n", livro->nome, atual->livro->nome);
         atual->esquerda = add_aux(atual->esquerda, livro);
     } else if (cmp_nome > 0 || cmp_autor != 0) {
-        printf("Adicionando '%s' à subárvore direita de '%s'.\n", livro->nome, atual->livro->nome);
         atual->direita = add_aux(atual->direita, livro);
     } else {
-        printf("Livro '%s' já existe. Incrementando quantidade.\n", livro->nome);
         atual->livro->qtd++;
     }
 
@@ -176,7 +172,7 @@ No* edita_aux(No *atual, const char *nome_errado, const char *autor, const char 
         free(atual->livro->nome);
         free(atual->livro->nome_norma); // Libera o nome normalizado antigo
         atual->livro->nome = strdup(novo_nome); // Aloca e copia o novo nome
-        atual->livro->nome_norma = normalize_string(novo_nome); // Atualiza o nome normalizado
+        atual->livro->nome_norma = strdup(normalize_string(novo_nome)); // Atualiza o nome normalizado
 
         *editado = atual; // Atualiza o ponteiro para o nó editado
     }
@@ -248,7 +244,7 @@ No* remove_aux(No *atual, const char *nome, const char *autor) {
 
         // Caso com dois filhos: encontrar o sucessor
         No *sucessor = atual->direita;
-        while (sucessor && sucessor->esquerda != NULL) {
+        while (sucessor && sucessor->esquerda) {
             sucessor = sucessor->esquerda;
         }
 
@@ -274,8 +270,8 @@ Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome,
     }
 
     // Normaliza o nome e o autor para comparação
-    char *nome_errado_norma = normalize_string(nome_errado);
-    char *autor_norma = normalize_string(autor);
+    char *nome_errado_norma = strdup(normalize_string(nome_errado));
+    char *autor_norma = strdup(normalize_string(autor));
 
     // Localiza e renomeia o livro usando a função auxiliar
     No *editado = NULL;
@@ -314,7 +310,6 @@ Livro* editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome,
     // Reinsere a cópia atualizada na posição correta
     c->raiz = add_aux(c->raiz, livro_temp);
 
-    printf("Livro '%s' atualizado e reposicionado com sucesso.\n", novo_nome);
     return livro_temp;
 }
 
@@ -327,8 +322,8 @@ void remover_livro(Catalogo *c, const char *nome, const char *autor) {
     }
 
     // Normaliza os parâmetros de entrada
-    char *nome_norma = normalize_string(nome);
-    char *autor_norma = normalize_string(autor);
+    char *nome_norma = strdup(normalize_string(nome));
+    char *autor_norma = strdup(normalize_string(autor));
 
     // Remove o livro usando a função auxiliar
     No *nova_raiz = remove_aux(c->raiz, nome_norma, autor_norma);
@@ -354,8 +349,8 @@ void verificar_status(Catalogo *c, const char *nome, const char *autor) {
     }
 
     // Normaliza o nome e o autor para comparação
-    char *nome_normalizado = normalize_string(nome);
-    char *autor_normalizado = normalize_string(autor);
+    char *nome_normalizado = strdup(normalize_string(nome));
+    char *autor_normalizado = strdup(normalize_string(autor));
 
     No *atual = c->raiz;
 
@@ -434,49 +429,20 @@ int devolve_livro_aux(No *atual, Livro *l) {
 
 
 // Função principal para devolver um livro ao catálogo
-int devolve_livro(Catalogo *c, char *nome, char *autor) {
-    if (!c || !nome || !autor) {
+int devolve_livro(Catalogo *c,  Livro *l) {
+    if (!c || !l) {
         printf("Erro: Parâmetros inválidos para devolução.\n");
         return -1; // Retorna -1 em caso de erro
     }
 
-    // Normaliza os parâmetros de entrada
-    char *nome_norma = normalize_string(nome);
-    char *autor_norma = normalize_string(autor);
-
-    // Cria um livro temporário com os dados fornecidos
-    Livro *temp = malloc(sizeof(Livro));
-    if (!temp) {
-        perror("Erro ao alocar memória para o livro temporário");
-        exit(EXIT_FAILURE);
-    }
-    temp->nome = strdup(nome);
-    temp->nome_norma = nome_norma;
-    temp->autor = strdup(autor);
-    temp->autor_norma = autor_norma;
-    temp->genero = strdup("");       // Gênero vazio para livros temporários
-    temp->genero_norma = strdup(""); 
-    temp->qtd = 1;                  // Quantidade inicial como 1
-    temp->status = false;           // Inicializa como disponível
-
     // Tenta devolver o livro usando a função auxiliar
-    int resultado = devolve_livro_aux(c->raiz, temp);
+    int resultado = devolve_livro_aux(c->raiz, l);
 
     if (resultado == 2) {
         // Adiciona o livro ao catálogo se ele não existir
-        add_livro(c, temp);
-        printf("Obrigado pela doação do livro '%s'!\n", nome);
-    } else {
-        // Libera a memória do livro temporário se ele já existia no catálogo
-        free(temp->nome);
-        free(temp->nome_norma);
-        free(temp->autor);
-        free(temp->autor_norma);
-        free(temp->genero);
-        free(temp->genero_norma);
-        free(temp);
-    }
-
+        add_livro(c, l);
+        printf("Obrigado pela devolução ou doação do livro '%s'!\n", l->nome);
+    } 
     return resultado;
 }
 
@@ -513,42 +479,15 @@ int empresta_livro_aux(No *atual, Livro *l) {
 }
 
 // Função principal para alugar um livro do catálogo
-int emprestar_livro(Catalogo *c, char *nome, char *autor) {
-    if (!c || !c->raiz || !nome || !autor) {
+int emprestar_livro(Catalogo *c, Livro *l) {
+    if (!c || !c->raiz || !l) {
         printf("Erro: Parâmetros inválidos ou catálogo vazio.\n");
         return -1; // Retorna -1 em caso de erro
     }
 
-    // Normaliza os parâmetros de entrada
-    char *nome_norma = normalize_string(nome);
-    char *autor_norma = normalize_string(autor);
-
-    // Cria um livro temporário com os dados fornecidos
-    Livro *temp = malloc(sizeof(Livro));
-    if (!temp) {
-        perror("Erro ao alocar memória para o livro temporário");
-        exit(EXIT_FAILURE);
-    }
-    temp->nome = strdup(nome);
-    temp->nome_norma = nome_norma;
-    temp->autor = strdup(autor);
-    temp->autor_norma = autor_norma;
-    temp->genero = strdup("");       // Gênero vazio para livros temporários
-    temp->genero_norma = strdup(""); 
-    temp->qtd = 1;                  // Quantidade inicial como 1 (não relevante aqui)
-    temp->status = false;           // Inicializa como disponível
 
     // Tenta alugar o livro usando a função auxiliar
-    int resultado = empresta_livro_aux(c->raiz, temp);
-
-    // Libera a memória do livro temporário
-    free(temp->nome);
-    free(temp->nome_norma);
-    free(temp->autor);
-    free(temp->autor_norma);
-    free(temp->genero);
-    free(temp->genero_norma);
-    free(temp);
+    int resultado = empresta_livro_aux(c->raiz, l);
 
     return resultado; // Retorna o resultado da operação (1, 0 ou -1)
 }
@@ -591,7 +530,7 @@ int buscar_por_nome(Catalogo *c, const char *nome) {
     }
 
     // Normaliza o nome para comparação
-    char *nome_normalizado = normalize_string(nome);
+    char *nome_normalizado =strdup(normalize_string(nome));
 
     int encontrados = 0;
     buscar_aux(c->raiz, nome_normalizado, &encontrados);
