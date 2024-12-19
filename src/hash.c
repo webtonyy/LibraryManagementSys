@@ -56,7 +56,7 @@ int inserir_livro(HashTable *t, Livro *l, const char *nome_no) {
                 Livro *livro = atual->livros[i];
                 if (strcmp(livro->nome_norma, l->nome_norma) == 0 && strcmp(livro->autor_norma, l->autor_norma) == 0) {
                     // Livro encontrado, incrementa a quantidade
-                    livro->qtd++;
+                    livro->qtd+=l->qtd;
                     livro->status = 0;
                     free(no_normalizado); // Libera a memória da string normalizada
                     return 1;
