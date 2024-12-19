@@ -122,7 +122,7 @@ No* add_aux(No *atual, Livro *livro) {
     } else if (cmp_nome > 0 || cmp_autor != 0) {
         atual->direita = add_aux(atual->direita, livro);
     } else {
-        atual->livro->qtd++;
+        atual->livro->qtd+=livro->qtd;
     }
 
     return atual;
@@ -273,6 +273,7 @@ void editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, c
     // Armazena a quantidade do livro encontrado
     int quantidade_antiga = atual->livro->qtd;
 
+    atual->livro->qtd =1;
     // Remove o nó do livro antigo
     c->raiz = remove_aux(c->raiz, nome_errado_norma, autor_norma);
 
