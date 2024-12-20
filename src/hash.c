@@ -37,35 +37,29 @@ int inserir_livro(HashTable *t, Livro *l, const char *nome_no) {
         return 0;
     }
 
-    // Normaliza o nome do nó (gênero ou autor)
-    char *no_normalizado = strdup(normalize_string(nome_no));
+    char *no_normalizado = normalize_string(nome_no); // Normalize node name
     if (!no_normalizado) {
         fprintf(stderr, "Falha ao normalizar nome do nó: %s\n", nome_no);
         return 0;
     }
 
-    // Calcula o índice na tabela hash usando a função hash
-    int id_no = funcaohash_string(no_normalizado);
+    int id_no = funcaohash_string(no_normalizado); // Calculate hash index
 
-    // Procura pelo nó na tabela hash
     NoHash *atual = t->tabela[id_no];
     while (atual != NULL) {
         if (strcmp(atual->nome, no_normalizado) == 0) {
-            // Nó encontrado, verifica se o livro está presente
             for (int i = 0; i < atual->quantidade; i++) {
                 Livro *livro = atual->livros[i];
-                if (strcmp(livro->nome_norma, l->nome_norma) == 0 && strcmp(livro->autor_norma, l->autor_norma) == 0) {
-                    // Livro encontrado, incrementa a quantidade
-                    livro->qtd+=l->qtd;
+                if (strcmp(livro->nome_norma, l->nome_norma) == 0 &&
+                    strcmp(livro->autor_norma, l->autor_norma) == 0) {
+                    livro->qtd += l->qtd;
                     livro->status = 0;
-                    free(no_normalizado); // Libera a memória da string normalizada
+                    free(no_normalizado); // Free normalized string
                     return 1;
                 }
             }
 
-            // Livro não encontrado no nó, adiciona à lista de livros
             if (atual->quantidade == atual->capacidade) {
-                // Redimensiona o vetor de livros se necessário
                 atual->capacidade *= 2;
                 atual->livros = realloc(atual->livros, atual->capacidade * sizeof(Livro *));
                 if (!atual->livros) {
@@ -75,28 +69,18 @@ int inserir_livro(HashTable *t, Livro *l, const char *nome_no) {
                 }
             }
 
-            // Cria e adiciona um novo livro ao nó
-            Livro *novo_livro = malloc(sizeof(Livro));
-            novo_livro->nome = strdup(l->nome);
-            novo_livro->nome_norma = strdup(l->nome_norma);
-            novo_livro->autor = strdup(l->autor);
-            novo_livro->autor_norma = strdup(l->autor_norma);
-            novo_livro->genero = strdup(l->genero);
-            novo_livro->genero_norma = strdup(l->genero_norma);
-            novo_livro->qtd = 1;
+            Livro *novo_livro = livro_init(l->nome, l->genero, l->autor);
+            novo_livro->qtd = l->qtd;
             novo_livro->status = false;
 
             atual->livros[atual->quantidade++] = novo_livro;
 
-            free_livro(novo_livro);
-
-            free(no_normalizado); // Libera a memória da string normalizada
+            free(no_normalizado); // Free normalized string
             return 1;
         }
-        atual = atual->proximo; // Avança para o próximo nó em caso de colisão
+        atual = atual->proximo;
     }
 
-    // Nó correspondente não encontrado, cria um novo nó e adiciona o livro a ele
     NoHash *novo_no = malloc(sizeof(NoHash));
     if (!novo_no) {
         fprintf(stderr, "Erro ao alocar memória para o novo nó.\n");
@@ -104,9 +88,9 @@ int inserir_livro(HashTable *t, Livro *l, const char *nome_no) {
         return 0;
     }
 
-    novo_no->nome = strdup(no_normalizado); // Armazena o nome original do nó
+    novo_no->nome = strdup(no_normalizado);
     novo_no->quantidade = 1;
-    novo_no->capacidade = 100; // Capacidade inicial do vetor de livros
+    novo_no->capacidade = 100;
     novo_no->livros = malloc(novo_no->capacidade * sizeof(Livro *));
     if (!novo_no->livros) {
         fprintf(stderr, "Erro ao alocar memória para o vetor de livros.\n");
@@ -116,19 +100,19 @@ int inserir_livro(HashTable *t, Livro *l, const char *nome_no) {
         return 0;
     }
 
-    // Cria e adiciona o primeiro livro ao novo nó
-    Livro *novo_livro = livro_init(l->nome,l->genero, l->autor);
+    Livro *novo_livro = livro_init(l->nome, l->genero, l->autor);
+    novo_livro->qtd = l->qtd;
+    novo_livro->status = false;
 
     novo_no->livros[0] = novo_livro;
 
-    // Insere o novo nó na tabela hash
     novo_no->proximo = t->tabela[id_no];
     t->tabela[id_no] = novo_no;
 
-
-    free(no_normalizado); // Libera a memória da string normalizada
+    free(no_normalizado); // Free normalized string
     return 1;
 }
+
 
 void edita_livro(HashTable *t, const char *nome_errado, const char *nome_correto, const char *nome_no) {
     if (!t || !nome_errado || !nome_correto || !nome_no) {

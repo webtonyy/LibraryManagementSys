@@ -14,12 +14,11 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-// Função para remover acentos
 char* remover_acentos(const char* str) {
     if (!str) return NULL;
 
-    char *buffer = malloc(strlen(str) + 1); // Aloca memória para a string normalizada
-    if (!buffer) return NULL; // Verifica se a alocação foi bem-sucedida
+    char *buffer = malloc(strlen(str) + 1); // Allocate memory for the normalized string
+    if (!buffer) return NULL; // Check allocation success
 
     int i, j = 0;
     for (i = 0; str[i] != '\0'; i++) {
@@ -37,12 +36,13 @@ char* remover_acentos(const char* str) {
         } else if (strchr("çÇ", c)) {
             buffer[j++] = 'c';
         } else {
-            buffer[j++] = c; // Copia o caractere sem alteração
+            buffer[j++] = c; // Copy character without modification
         }
     }
-    buffer[j] = '\0'; // Certifique-se de terminar a string
+    buffer[j] = '\0'; // Null-terminate the string
     return buffer;
 }
+
 
 // Função para converter para minúsculas
 char* to_lowercase(const char* str) {
@@ -81,17 +81,14 @@ int is_valid_string(const char *str) {
 char* normalize_string(const char* str) {
     if (!str) return NULL;
 
-    char *lowercase = to_lowercase(str);       // Converte para minúsculas
-    if (!lowercase) return NULL;              // Verifica se a conversão foi bem-sucedida
+    char *lowercase = to_lowercase(str);       // Convert to lowercase
+    if (!lowercase) return NULL;              // Check allocation success
 
-    char *normalized = remover_acentos(lowercase); // Remove os acentos
-    free(lowercase);                             // Libera a memória intermediária
+    char *normalized = remover_acentos(lowercase); // Remove accents
+    free(lowercase);                             // Free intermediate memory
 
-    return normalized;                          // Retorna a string normalizada
+    return normalized;                          // Return normalized string
 }
-
-
-
 
 // Função para contar quantos livros existem com o mesmo nome no catálogo
 void contar_livros(No *no, const char *nome, int *count) {
@@ -105,23 +102,17 @@ void contar_livros(No *no, const char *nome, int *count) {
 void percorrer_arvore_e_inserir_na_hash_autor(No *no, HashTable *ht) {
     if (no == NULL) return;
 
-    // Insere o livro do nó atual na tabela hash
     inserir_livro(ht, no->livro, no->livro->autor);
 
-    // Percorre a subárvore esquerda e direita recursivamente
     percorrer_arvore_e_inserir_na_hash_autor(no->esquerda, ht);
     percorrer_arvore_e_inserir_na_hash_autor(no->direita, ht);
-
 }
 
 void percorrer_arvore_e_inserir_na_hash_genero(No *no, HashTable *ht) {
     if (no == NULL) return;
 
-    // Insere o livro do nó atual na tabela hash
     inserir_livro(ht, no->livro, no->livro->genero);
 
-    // Percorre a subárvore esquerda e direita recursivamente
     percorrer_arvore_e_inserir_na_hash_genero(no->esquerda, ht);
     percorrer_arvore_e_inserir_na_hash_genero(no->direita, ht);
-
 }

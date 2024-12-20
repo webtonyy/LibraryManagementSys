@@ -102,103 +102,125 @@ Catalogo* catalogo_init() {
 
 
 // Função auxiliar para adicionar um nó à árvore binária
+// Essa função insere um novo nó na árvore binária de busca baseada nos campos normalizados
+// do livro (nome e autor). Se o nó já existir com o mesmo nome e autor, incrementa a quantidade.
 No* add_aux(No *atual, Livro *livro) {
+    // Caso base: se o nó atual for nulo, cria um novo nó com o livro.
     if (!atual) {
         No *novo_no = no_init(livro);
         return novo_no;
     }
 
+    // Verifica se os ponteiros são válidos para evitar erros de acesso à memória.
     if (!livro || !livro->nome_norma || !atual || !atual->livro || !atual->livro->nome_norma) {
         fprintf(stderr, "Erro: Ponteiro nulo detectado em add_aux.\n");
         exit(EXIT_FAILURE);
     }
 
-    // Comparações baseadas nos campos normalizados
+    // Compara os nomes normalizados dos livros para decidir a posição na árvore.
     int cmp_nome = strcmp(livro->nome_norma, atual->livro->nome_norma);
     int cmp_autor = strcmp(livro->autor_norma, atual->livro->autor_norma);
 
+    // Se o nome do livro for menor, insere na subárvore esquerda.
     if (cmp_nome < 0) {
         atual->esquerda = add_aux(atual->esquerda, livro);
-    } else if (cmp_nome > 0 || cmp_autor != 0) {
+    }
+    // Se o nome for maior ou o autor for diferente, insere na subárvore direita.
+    else if (cmp_nome > 0 || cmp_autor != 0) {
         atual->direita = add_aux(atual->direita, livro);
-    } else {
+    }
+    // Caso contrário, o livro já existe; apenas incrementa a quantidade.
+    else {
         atual->livro->qtd += livro->qtd;
     }
 
-    return atual;
+    return atual; // Retorna o nó atualizado.
 }
 
 // Função principal para adicionar um livro ao catálogo
+// Essa função gerencia a adição de um livro ao catálogo, chamando a função auxiliar `add_aux`.
 Livro* add_livro(Catalogo *c, Livro *l) {
+    // Verifica se o catálogo ou o livro são válidos antes de prosseguir.
     if (!c || !l) {
         fprintf(stderr, "Erro: Catálogo ou livro inválido.\n");
         return NULL;
     }
 
-    // Adiciona o livro à árvore binária
+    // Adiciona o livro à árvore binária do catálogo.
     c->raiz = add_aux(c->raiz, l);
 
-    // Incrementa o número total de livros no catálogo
+    // Incrementa o número total de livros no catálogo.
     c->nl++;
 
-    return l;
+    return l; // Retorna o livro adicionado.
 }
 
-
 // Função auxiliar para listar os livros em ordem (in-order traversal)
+// Percorre a árvore binária em ordem crescente (subárvore esquerda -> nó -> subárvore direita)
+// e imprime os detalhes de cada livro.
 void listar_aux(No *no) {
-    if (!no) return;
+    if (!no) return; // Caso base: se o nó for nulo, retorna.
 
-    // Percorre a subárvore esquerda
+    // Percorre recursivamente a subárvore esquerda.
     listar_aux(no->esquerda);
 
-    // Imprime os dados do livro no nó atual
+    // Imprime as informações do livro no nó atual.
     printf("Título: %s | Autor: %s | Gênero: %s | Quantidade: %d \n",
-        no->livro->nome,   // Usa o nome original para exibição
-        no->livro->autor,  // Usa o autor original para exibição
-        no->livro->genero, // Usa o gênero original para exibição
-        no->livro->qtd);
+        no->livro->nome,   // Usa o nome original do livro para exibição.
+        no->livro->autor,  // Usa o autor original do livro para exibição.
+        no->livro->genero, // Usa o gênero original do livro para exibição.
+        no->livro->qtd);   // Exibe a quantidade disponível.
 
-    // Percorre a subárvore direita
+    // Percorre recursivamente a subárvore direita.
     listar_aux(no->direita);
 }
 
 // Função principal para listar todos os livros no catálogo
+// Essa função verifica se há livros no catálogo e chama a função auxiliar `listar_aux`
+// para imprimir todos os livros em ordem crescente.
 void listar_livros(Catalogo *c) {
-    if (!c || !c->raiz) {
+    if (!c || !c->raiz) { // Verifica se o catálogo está vazio ou inválido.
         printf("O catálogo está vazio.\n");
         return;
     }
 
-    
-    // Chama a função auxiliar para percorrer a árvore
+    // Chama a função auxiliar para percorrer e listar os livros na árvore binária.
     listar_aux(c->raiz);
 }
 
+// Função auxiliar para remover um nó da árvore binária
+// Essa função remove um nó correspondente ao nome e autor fornecidos.
+// Lida com três casos principais: sem filhos, com um filho e com dois filhos.
 No* remove_aux(No *atual, const char *nome, const char *autor) {
-    if (!atual) return NULL;
+    if (!atual) return NULL; // Caso base: se o nó for nulo, retorna.
 
-    int cmp_nome = strcmp(nome, atual->livro->nome_norma);
-    int cmp_autor = strcmp(autor, atual->livro->autor_norma);
+    int cmp_nome = strcmp(nome, atual->livro->nome_norma);   // Compara os nomes normalizados.
+    int cmp_autor = strcmp(autor, atual->livro->autor_norma); // Compara os autores normalizados.
 
+    // Se o nome for menor, continua na subárvore esquerda.
     if (cmp_nome < 0) {
         atual->esquerda = remove_aux(atual->esquerda, nome, autor);
-    } else if (cmp_nome > 0) {
+    }
+    // Se o nome for maior, continua na subárvore direita.
+    else if (cmp_nome > 0) {
         atual->direita = remove_aux(atual->direita, nome, autor);
-    } else if (cmp_autor == 0) {
+    }
+    // Caso encontre o nó correspondente ao nome e autor fornecidos:
+    else if (cmp_autor == 0) {
+        // Se houver mais de uma unidade do livro, apenas decrementa a quantidade.
         if (atual->livro->qtd > 1) {
             atual->livro->qtd--;
             return atual;
         }
 
-        // Caso sem filhos
+        // Caso sem filhos: remove o nó liberando a memória alocada.
         if (!atual->esquerda && !atual->direita) {
             free_livro(atual->livro);
             free(atual);
             return NULL;
         }
 
-        // Caso com um filho
+        // Caso com um filho: conecta diretamente ao filho não nulo e libera memória do nó atual.
         if (!atual->esquerda || !atual->direita) {
             No *temp = atual->esquerda ? atual->esquerda : atual->direita;
             free_livro(atual->livro);
@@ -206,33 +228,32 @@ No* remove_aux(No *atual, const char *nome, const char *autor) {
             return temp;
         }
 
-        // Caso com dois filhos
-        No *sucessor = atual->direita;
+        // Caso com dois filhos:
+        No *sucessor = atual->direita;      // Encontra sucessor na subárvore direita (menor valor).
         No *sucessor_pai = atual;
 
-        while (sucessor->esquerda) {
+        while (sucessor->esquerda) {       // Caminha até encontrar o menor valor na subárvore direita.
             sucessor_pai = sucessor;
             sucessor = sucessor->esquerda;
         }
 
-        // Substituir os dados do nó atual pelos do sucessor
-        Livro *livro_temp = sucessor->livro;
-        sucessor->livro = NULL; // Remover a referência ao livro no sucessor
-        free_livro(atual->livro);
+        Livro *livro_temp = sucessor->livro;  // Substitui os dados do nó pelo sucessor.
+        sucessor->livro = NULL;               // Remove referência ao livro no sucessor.
+        free_livro(atual->livro);             // Libera memória do antigo dado do nó atual.
         atual->livro = livro_temp;
 
-        // Ajustar os ponteiros para desconectar o sucessor
-        if (sucessor_pai != atual) {
+        if (sucessor_pai != atual) {          // Ajusta ponteiros para desconectar o sucessor da árvore.
             sucessor_pai->esquerda = sucessor->direita;
         } else {
             sucessor_pai->direita = sucessor->direita;
         }
 
-        free(sucessor);
+        free(sucessor);                       // Libera memória do sucessor substituído.
     }
 
-    return atual;
+    return atual;  // Retorna o nó atualizado após remoção.
 }
+
 
 // Função para renomear um livro no catálogo
 void editar_livro(Catalogo *c, const char *nome_errado, const char *novo_nome, const char *autor, const char *genero) {
